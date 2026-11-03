@@ -1,14 +1,15 @@
 # Skyday — Delivery Status
 
 Date (UTC): 2026-11-03
-Repository/branch/commit: https://github.com/SpideyAB/IOS-To-Do-List (fork of muhammadabdullah018/IOS-To-Do-List), branch `skyday-delivery`, commit FINAL_SHA. Builds on PR #1 branch `claude/skyday-v1` (7e2f173).
+Repository/branch/commit: https://github.com/SpideyAB/IOS-To-Do-List (fork of muhammadabdullah018/IOS-To-Do-List), branch `skyday-delivery`, see `git log` on the branch (latest pushed with this file). Builds on PR #1 branch `claude/skyday-v1` (7e2f173).
 Environment: Windows 11 Pro (no Xcode, no Swift locally). iOS builds and tests ran on GitHub Actions `macos-15` with Xcode 16.4.
 
 ## Executive result
-- Native iOS build: **DONE** — Xcode 16.4 `BUILD SUCCEEDED` for app + widget (simulator, unsigned), CI run 41683623460 and RUN_2_LINK.
+- Native iOS build: **DONE** — Xcode `BUILD SUCCEEDED` for app + widget (simulator, unsigned): run 41683623460 (Xcode 16.4, arm64) and run 41694283629 (Intel, includes month calendar, haptics, launch and motion code).
 - iPhone-installable build: **BLOCKED** — needs a Mac (or macOS CI with secrets) plus your Apple ID/team to sign. Exact steps: `docs/RUN_ON_IPHONE.md`. No signed `.ipa` exists.
 - Simulator build/run: **DONE** — 8 UI tests launch and drive the app on an iOS simulator; 9 real screenshots in `docs/screenshots/ios-simulator/`. Unsigned `Skyday-simulator.app.zip` is in the CI artifact `ios-results` (simulator only).
-- Playable browser demo: **DONE** — https://spideyab.github.io/IOS-To-Do-List/ (verified live). Local: `cd web-demo && npm install && npm run dev`.
+- Playable browser demo: **DONE** — https://spideyab.github.io/IOS-To-Do-List/ (verified live; redeployed automatically on each push). Local: `cd web-demo && npm install && npm run dev`.
+- Upstream PR: https://github.com/muhammadabdullah018/IOS-To-Do-List/pull/2 (from `SpideyAB:skyday-delivery`).
 - TestFlight/App Store: **BLOCKED** — needs paid Apple Developer account; checklist in `docs/RELEASE_CHECKLIST.md`.
 - Security review: **DONE** (code + CI checks), device-level behaviour PARTIAL — `docs/SECURITY_REVIEW.md`.
 
@@ -53,7 +54,7 @@ Details: `docs/TEST_RESULTS.md`.
 ## Git authorship
 - Actual author/committer configuration verified: **Yes** (`git config` from the user's global `.gitconfig`, name SpideyAB; no `GIT_AUTHOR_*`/`GIT_COMMITTER_*` overrides set).
 - Optional Claude attribution disabled: **Yes** — `.claude/settings.json` sets `attribution.commit = ""`, `attribution.pr = ""`, `sessionUrl = false` (Claude Code 2.1.302).
-- Latest commit verified: FINAL_SHA, author SpideyAB, no trailers.
+- Latest commits verified: all 7+ new commits authored and committed by SpideyAB with no trailers (`git log 7e2f173..HEAD --format="%an %(trailers)"`).
 - Existing published history preserved: **Yes** — the 6 earlier commits (authored "Claude", with Co-Authored-By trailers) are untouched, by the owner's choice. PR #1 untouched.
 
 ## What works today
@@ -61,7 +62,8 @@ Everything in the feature matrix marked DONE, in the iOS simulator and in the li
 
 ## What does not work yet
 - Not installed or run on a physical iPhone; reminders and widget not observed on a device.
-- No recorded VoiceOver / largest-text pass.
+- No recorded VoiceOver pass; large-text screenshots come from the new `testLargeTextScreenshots` UI test (results in the CI artifact).
+- The latest UI test run had not finished when this file was written; check run 41694283629.
 - Web demo lacks notifications, widgets, search and rest days.
 - The removed prompt `.md` files still exist in older commits (history kept on purpose).
 
@@ -69,7 +71,7 @@ Everything in the feature matrix marked DONE, in the iOS simulator and in the li
 1. **Mac + Xcode 16** (or a borrowed Mac) to sign and install: `docs/RUN_ON_IPHONE.md`.
 2. **Apple ID** (free = 7-day installs on your phone) or **paid Developer account** (TestFlight/App Store, long-lived App Group signing).
 3. Choose your bundle prefix and Team ID, then run `python3 Tools/generate_xcodeproj.py --bundle-prefix com.yourname --team YOURTEAMID`.
-4. Optional: open a PR from `SpideyAB:skyday-delivery` to `muhammadabdullah018:main` (or ask the repo owner for write access).
+4. Merge PR #2 on the original repo (needs the owner muhammadabdullah018, or write access for SpideyAB).
 
 ## How to run
 - Browser now: https://spideyab.github.io/IOS-To-Do-List/

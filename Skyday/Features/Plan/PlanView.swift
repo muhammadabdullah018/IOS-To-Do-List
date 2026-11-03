@@ -111,10 +111,11 @@ struct MonthGrid: View {
             .foregroundStyle(SkyColor.deepSky)
 
             LazyVGrid(columns: columns, spacing: 2) {
-                ForEach(cells.prefix(7), id: \.self) { day in
-                    Text(Format.weekdayLetter(day, calendar: calendar))
+                // Int ids so the header never collides with the DayKey ids of the cells below.
+                ForEach(0..<7, id: \.self) { i in
+                    Text(Format.weekdayLetter(cells[i], calendar: calendar))
                         .font(SkyFont.caption)
-                        .foregroundStyle(day.weekday == 1 ? SkyColor.pinkText : SkyColor.inkSecondary)
+                        .foregroundStyle(cells[i].weekday == 1 ? SkyColor.pinkText : SkyColor.inkSecondary)
                         .frame(maxWidth: .infinity)
                         .accessibilityHidden(true)
                 }
@@ -145,7 +146,7 @@ struct MonthGrid: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(day.noonDate(in: calendar).formatted(date: .complete, time: .omitted))
-        .accessibilityValue(busy.contains(day) ? "Has tasks" : "")
+        .accessibilityValue([day == today ? "Today" : nil, busy.contains(day) ? "Has tasks" : nil].compactMap { $0 }.joined(separator: ", "))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }

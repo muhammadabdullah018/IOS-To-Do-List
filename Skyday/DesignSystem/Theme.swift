@@ -33,74 +33,59 @@ extension Color {
 }
 
 enum SkyColor {
-    // Brand (exact)
-    static let sky = Color(hex: 0x0593C6)
-    static let white = Color(hex: 0xFCFFFF)
-    static let pink = Color(hex: 0xD83995)
+    // Brand palette (exact, from the Skyday sheet)
+    static let sky = Color(hex: 0x0593C6)        // Sky Blue
+    static let white = Color(hex: 0xFCFFFF)      // White
+    static let pink = Color(hex: 0xD83995)       // Hot Pink
+    static let lightSky = Color(hex: 0xD7F2FF)   // Light Sky
+    static let softPink = Color(hex: 0xFFE6F4)   // Soft Pink
 
-    // Night canvas (v2 layout: dark canvas, bright rounded cards). Contrast vs canvas:
-    // onCanvas 17.6:1, onCanvasSecondary 8.4:1, deepSky(dark) 8.9:1.
-    static let canvas = Color(hex: 0x0B1620)
-    static let raised = Color(hex: 0x16252F)
-    static let raisedHigh = Color(hex: 0x1F313D)
-    static let onCanvas = Color(hex: 0xFCFFFF)
-    static let onCanvasSecondary = Color(hex: 0x9DB4C3)
+    // Accessibility-derived shades (small text). Brand Sky Blue on white is 3.5:1 and
+    // Hot Pink 4.2:1, both below AA for small text, so small text uses these instead.
+    static let deepSky = Color(hex: 0x0479A5)    // 4.9:1 on white
+    static let pinkText = Color(hex: 0xB8287C)   // 5.8:1 on white, 5.0:1 on softPink
 
-    // Text that sits on bright cards (hero, pastel task and list cards) in every appearance.
-    // cardInk on brand Sky Blue #0593C6 is 5.0:1, so the hero keeps the exact brand fill.
-    // cardInkSecondary is for PASTEL cards only (6-7:1); on the sky hero it drops to 2.4:1.
-    static let cardInk = Color(hex: 0x0B1B26)
-    static let cardInkSecondary = Color(hex: 0x34505F)
+    // Neutrals
+    static let ink = Color(hex: 0x12364A)            // 12.6:1
+    static let inkSecondary = Color(hex: 0x557385)   // 5.0:1
+    static let page = Color(hex: 0xF2FAFE)           // canvas under the sky header
+    static let surface = Color.white                 // cards and rows
+    static let surfaceSunken = Color(hex: 0xEAF8FD)
+    static let border = Color(hex: 0xDDECF4)
+    static let track = Color(hex: 0xDDECF4)
+    static let pinkSoft = softPink
+    static let skySoft = lightSky
 
-    // Pastel card fills derived from the brand hues.
-    static let skyPastel = Color(hex: 0xCDEFFC)
-    static let pinkPastel = Color(hex: 0xF9D7EA)
-    static let cloudPastel = Color(hex: 0xEAF8FD)
+    // On-illustration text (white over the sky art; ≥ 3:1 for the large greeting, plus shadow)
+    static let onSky = Color.white
+    static let skyTextShadow = Color(hex: 0x03506F, alpha: 0.45)
 
-    /// Card fill for a list: its colour mixed 28% into white (keeps cardInk ≥ 7:1).
-    static func pastel(_ c: ListColor) -> Color {
+    static let cloud = Color(hex: 0xFFFFFF)
+    static let cloudShade = Color(hex: 0xC6E8F6)
+    static let twinkle = Color(hex: 0x7FCBE8)
+    static let flame = Color(hex: 0xF2913D)
+    static let star = Color(hex: 0xF5B932)
+
+    /// Light tint used at the trailing end of a list card's gradient.
+    static func tint(_ c: ListColor) -> Color {
         switch c {
-        case .sky: return skyPastel
-        case .pink: return pinkPastel
+        case .sky: return lightSky
+        case .pink: return softPink
         default:
-            let mix = { (v: UInt32) -> Double in (255 + (Double(v) - 255) * 0.28) / 255 }
+            let mix = { (v: UInt32) -> Double in (255 + (Double(v) - 255) * 0.18) / 255 }
             return Color(.sRGB, red: mix((c.hex >> 16) & 0xFF), green: mix((c.hex >> 8) & 0xFF), blue: mix(c.hex & 0xFF), opacity: 1)
         }
     }
 
-    /// Glyph colour for a solid list tile: ink on light hues, white on dark ones (≥ 3:1 either way).
+    static func list(_ color: ListColor) -> Color { Color(hex: color.hex) }
+
+    /// Glyph colour on a solid list tile: ink on light hues, white on dark ones (≥ 3:1).
     static func glyph(on c: ListColor) -> Color {
         switch c {
-        case .amber, .lagoon, .mint, .sky: return cardInk
+        case .amber, .lagoon, .mint, .sky: return ink
         default: return Color.white
         }
     }
-
-    // Derived for accessibility (small text). The app runs in its night appearance, so the
-    // dark values are what users see; light values stay valid for previews and the widget.
-    static let deepSky = Color.dynamic(light: 0x0479A5, dark: 0x4CC3EE)
-    static let pinkText = Color.dynamic(light: 0xB8287C, dark: 0xF07BBE)
-    /// Small pink text on pastel cards (5.3:1 on pinkPastel, 5.7:1 on skyPastel; 4.0 on the
-    /// ink pastel, so overdue uses a filled chip instead of pink text).
-    static let pinkOnCard = Color(hex: 0xA61E6E)
-
-    // Neutrals (dark values match the canvas family)
-    static let ink = Color.dynamic(light: 0x12364A, dark: 0xFCFFFF)
-    static let inkSecondary = Color.dynamic(light: 0x557385, dark: 0x9DB4C3)
-    static let page = Color.dynamic(light: 0xFCFFFF, dark: 0x0B1620)
-    static let surface = Color.dynamic(light: 0xFFFFFF, dark: 0x16252F)
-    static let surfaceSunken = Color.dynamic(light: 0xEAF8FD, dark: 0x1F313D)
-    static let border = Color.dynamic(light: 0xDDECF4, dark: 0x22343F)
-    static let pinkSoft = Color.dynamic(light: 0xFBE6F2, dark: 0x3A1730)
-    static let skySoft = Color.dynamic(light: 0xDDF5FE, dark: 0x123A55)
-    static let track = Color.dynamic(light: 0xDDECF4, dark: 0x2A3E4B)
-
-    static let cloud = Color(hex: 0xFFFFFF)
-    static let cloudShade = Color(hex: 0xC6E8F6)
-    static let twinkle = Color(hex: 0xBFE9F9)
-    static let shadow = Color(hex: 0x000000, alpha: 0.35)
-
-    static func list(_ color: ListColor) -> Color { Color(hex: color.hex) }
 }
 
 // MARK: - Spacing, radii, type
@@ -118,10 +103,8 @@ enum Space {
 }
 
 enum Radius {
-    static let hero: CGFloat = 34
-    static let bigCard: CGFloat = 28
     static let card: CGFloat = 22
-    static let row: CGFloat = 18
+    static let row: CGFloat = 16
     static let tile: CGFloat = 14
     static let small: CGFloat = 10
 }
@@ -130,9 +113,8 @@ enum SkyFont {
     /// "TUESDAY, NOV 3" overline.
     static let overline = Font.system(.footnote, design: .default, weight: .semibold)
     static let hero = Font.system(.largeTitle, design: .rounded, weight: .bold)
-    /// Big hero headline on bright cards ("You have 3 tasks left today").
-    static let headline = Font.system(.title, design: .rounded, weight: .heavy)
-    static let cardTitle2 = Font.system(.title3, design: .rounded, weight: .bold)
+    /// Greeting / screen title drawn over the sky illustration.
+    static let skyTitle = Font.system(.largeTitle, design: .rounded, weight: .bold)
     static let section = Font.system(.title2, design: .rounded, weight: .bold)
     static let cardTitle = Font.system(.headline, design: .rounded, weight: .semibold)
     static let rowTitle = Font.system(.body, design: .default, weight: .semibold)
@@ -154,7 +136,7 @@ struct CardSurface: ViewModifier {
                 RoundedRectangle(cornerRadius: radius, style: .continuous)
                     .strokeBorder(SkyColor.border, lineWidth: 1)
             )
-            .shadow(color: SkyColor.shadow.opacity(0.4), radius: 10, x: 0, y: 6)
+            .shadow(color: Color(hex: 0x0593C6, alpha: 0.08), radius: 10, x: 0, y: 4)
     }
 }
 

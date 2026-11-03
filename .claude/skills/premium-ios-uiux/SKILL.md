@@ -26,7 +26,7 @@ The person: a university student or young professional who opens the app for sec
 
 ## Procedure
 1. **State the job of the screen** in one sentence and the single primary action.
-2. **Hierarchy pass**: list sections top to bottom with why each earns its place. Today's fixed order: sky hero (date, greeting + optional name, avatar → Settings, "You have N tasks left today", progress bar, "Next: …" line, calendar button) → status pills (This week / Day streak / Done today) → Today tasks as big pastel cards (max 3 + "N more") → Coming up (max 3) → Done today (toggled by its pill). Each number appears once.
+2. **Hierarchy pass**: list sections top to bottom with why each earns its place. Today's fixed order (reference sheet): pixel-sky header (date, "Good Afternoon, <name>" + sun/moon, calendar button, soft-pink streak badge) → progress ring card ("67% · 4 of 6 Tasks completed today", overlapping the art) → "Today" + blue square add button → task rows (open in do-next order, max 6 + "Show more"; completed today stay below, checked) → Coming up (max 3).
 3. **Action map**: for every tappable element write what it does, its feedback (haptic/animation/toast) and its undo path. No element may be decorative-only if it looks tappable.
 4. **States**: empty (no tasks ever), clear (nothing due), all done, overdue present, loading (none, data is local), error (save failure banner, recovery alert), permission denied (reminders).
 5. **Accessibility**: Dynamic Type up to AX5 (use `dynamicTypeSize.isAccessibilitySize` to switch HStack→VStack, as `ProgressCard` does), VoiceOver labels/values/hints, 44pt hit targets, Reduce Motion, contrast (see tokens below).
@@ -34,9 +34,9 @@ The person: a university student or young professional who opens the app for sec
 7. Implement with existing components before creating new ones.
 
 ## Standards
-- Exactly three tabs: Today, Lists, Progress, shown in the custom `FloatingTabBar` with the pink + beside it. Everything else is a sheet (`SheetRoute`) or a pushed destination (`TodayRoute`, `ListsRoute`). Calendar = `PlanView`, reached from the hero's calendar button and "See all". Settings = sheet from the Today avatar or the Progress hero.
+- Exactly three tabs in the native tab bar: Today (house), Lists (stack), Progress (chart). Everything else is a sheet (`SheetRoute`) or a pushed destination (`TodayRoute`, `ListsRoute`). Calendar = `PlanView`, from the header calendar button and the progress card. Settings = sheet from the Progress header gear.
 - Spacing: 8pt rhythm via `Space` (4/8/12/16/20/24/32); page gutter 20.
-- Radii: hero 34, big cards 28, cards 22, rows 18, tiles 14, small 10. Do not invent new radii.
+- Radii: cards 22, rows 16, tiles 14, small 10. Do not invent new radii.
 - Type: system fonts only. Rounded design for hero titles and numbers (`SkyFont.hero`, `.bigNumber`), default design for body and rows. Always text styles (scale with Dynamic Type), never fixed sizes for text except the 64pt streak numeral, which has `minimumScaleFactor`.
 - Contrast: small text never uses brand `#0593C6` (3.5:1) or `#D83995` (4.2:1) on white; use `SkyColor.deepSky` / `.pinkText`. Secondary text is `SkyColor.inkSecondary` (#557385, 5.0:1).
 - Copy: short, warm, never guilt-based ("Rest day used. 1 more task keeps it going.", never "You failed").

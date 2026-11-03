@@ -20,11 +20,10 @@ Static visual changes (`pixel-art-design-system`) or layout (`premium-ios-uiux`)
 | Checkbox tap | fill + check `trim` | `Motion.check` spring 0.26s | 0.12s ease |
 | Completed row (Today) | stays checked 650 ms ("lingering"), then fades/scales out while the next task slides in | `Motion.settle` 0.24s | opacity only |
 | Progress card | number `.numericText()`, bar width | `Motion.progress` 0.28s | none |
-| Daily goal reached | `PixelBurst` 18 square particles 1.1s over the status pills + success haptic | once per day (`lastCelebratedDay`) | haptic only |
+| Daily goal reached | `PixelBurst` 18 square particles 1.1s over the progress card + success haptic | once per day (`lastCelebratedDay`) | haptic only |
 | Undo toast | slide up + fade | `Motion.settle` | fade |
-| Hero clouds | whole-point **stepped** drift inside the 96pt art strip, 2 redraws/s (`HeroClouds`) | ping-pong ±6pt | static; paused when inactive; hidden at AX text sizes |
-| Task card complete | dark circle → sky circle, check scales 1.15 | `Motion.check` | fade |
-| Tab switch | selected capsule grows to show its label | `Motion.settle` | instant |
+| Header art | static pixel scene (no perpetual motion); Today swaps day/sunset/night by hour | — | — |
+| Row complete | square checkbox fills + check draws; row moves to the completed group | `Motion.check` + `Motion.settle` | fade |
 | Buttons | `PressableButtonStyle` scale 0.97 | spring 0.25 | no scale |
 
 Haptics: `tick` (light) on complete/add, `selection` on pickers/day changes, `success` on goal reached and save, `warning` on delete/erase, `soft` on undo.

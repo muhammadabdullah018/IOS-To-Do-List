@@ -172,7 +172,7 @@ struct DayAgenda: View {
                 VStack(alignment: .leading, spacing: Space.sm) {
                     SectionHeader(title: "Completed")
                     ForEach(completed) { event in
-                        DoneEventRow(event: event, task: store.task(event.taskID), list: store.list(event.listID)) { task in
+                        DoneEventRow(event: event, task: store.task(event.taskID)) { task in
                             store.reopen(task.id)
                         } onOpen: { task in
                             router.present(.task(task.id))

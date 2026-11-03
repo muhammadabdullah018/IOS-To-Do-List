@@ -11,6 +11,7 @@ final class XCUIElement {
     func waitForExistence(timeout: TimeInterval) -> Bool { false }
     func tap() {}
     func typeText(_ text: String) {}
+    var buttons: XCUIElementQuery { XCUIElementQuery() }
 }
 
 final class XCUIElementQuery {
@@ -30,6 +31,7 @@ class XCUIApplication {
     var textFields: XCUIElementQuery { XCUIElementQuery() }
     var staticTexts: XCUIElementQuery { XCUIElementQuery() }
     var navigationBars: XCUIElementQuery { XCUIElementQuery() }
+    var tabBars: XCUIElement { XCUIElement() }
     func descendants(matching type: XCUIElementType) -> XCUIElementQuery { XCUIElementQuery() }
 }
 

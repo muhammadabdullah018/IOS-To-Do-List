@@ -3,8 +3,8 @@ import SkydayKit
 
 // MARK: - Checkbox
 
-/// Large circular completion control (44pt hit area). Fills and draws its check with a
-/// short spring; static cross-fade under Reduce Motion.
+/// Rounded-square completion control (44pt hit area): sky outline, fills sky with a white
+/// check that draws itself. Cross-fade under Reduce Motion.
 struct SkyCheckbox: View {
     let isOn: Bool
     var tint: Color = SkyColor.sky
@@ -18,16 +18,17 @@ struct SkyCheckbox: View {
     var body: some View {
         Button(action: action) {
             ZStack {
-                Circle()
-                    .strokeBorder(isOn ? tint : SkyColor.inkSecondary.opacity(0.45), lineWidth: 2)
-                    .background(Circle().fill(isOn ? tint : Color.clear))
-                    .frame(width: 26, height: 26)
+                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                    .fill(isOn ? tint : Color.white)
+                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                    .strokeBorder(isOn ? tint : SkyColor.sky.opacity(isEnabled ? 0.75 : 0.35), lineWidth: 2)
                 CheckShape()
                     .trim(from: 0, to: isOn ? 1 : 0)
                     .stroke(Color.white, style: StrokeStyle(lineWidth: 2.6, lineCap: .round, lineJoin: .round))
-                    .frame(width: 12, height: 10)
+                    .frame(width: 12, height: 9)
             }
-            .scaleEffect(isOn && !reduceMotion ? 1.0 : (reduceMotion ? 1 : 0.96))
+            .frame(width: 24, height: 24)
+            .scaleEffect(isOn && !reduceMotion ? 1.0 : (reduceMotion ? 1 : 0.94))
             .frame(width: 44, height: 44)
             .contentShape(Rectangle())
             .animation(reduceMotion ? .easeInOut(duration: 0.12) : Motion.check, value: isOn)
@@ -36,7 +37,6 @@ struct SkyCheckbox: View {
         .disabled(!isEnabled)
         .accessibilityLabel(title.isEmpty ? (isOn ? "Completed" : "Not completed") : (isOn ? "Reopen \(title)" : "Complete \(title)"))
         .accessibilityValue(isOn ? "Completed" : "Not completed")
-        .accessibilityAddTraits(.isButton)
     }
 }
 
@@ -52,29 +52,25 @@ struct CheckShape: Shape {
 
 // MARK: - Priority mark
 
-/// Discreet stepped bars: 1–3 pixels high. High priority uses the pink accent.
+/// High priority = pink flag (as in the reference). Medium/low = small sky dot / nothing.
 struct PriorityMark: View {
     let priority: Priority
-    /// On pastel cards the inactive steps use card ink so they stay visible.
-    var onCard = false
 
     var body: some View {
-        if priority != .none {
-            HStack(alignment: .bottom, spacing: 2) {
-                ForEach(1...3, id: \.self) { level in
-                    Rectangle()
-                        .fill(level <= priority.rawValue ? color : (onCard ? SkyColor.cardInk.opacity(0.15) : SkyColor.track))
-                        .frame(width: 4, height: CGFloat(4 + level * 3))
-                }
-            }
-            .accessibilityElement()
-            .accessibilityLabel("\(priority.label) priority")
+        switch priority {
+        case .high:
+            Image(systemName: "flag.fill")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(SkyColor.pink)
+                .accessibilityLabel("High priority")
+        case .medium:
+            Image(systemName: "flag")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(SkyColor.deepSky)
+                .accessibilityLabel("Medium priority")
+        case .low, .none:
+            EmptyView()
         }
-    }
-
-    private var color: Color {
-        if priority == .high { return SkyColor.pink }
-        return onCard ? SkyColor.cardInk : SkyColor.sky
     }
 }
 
@@ -93,7 +89,8 @@ struct TaskRowModel {
     var isDone: Bool { completedOverride ?? task.isCompleted }
 }
 
-/// The shared task card used on Today, Plan and search results.
+/// The shared task row (reference style): white rounded card, square checkbox, title,
+/// one subtitle line ("Due Today" in pink, a time, or the day), trailing flag or chevron.
 struct TaskRow: View {
     let model: TaskRowModel
     var compact = false
@@ -103,80 +100,79 @@ struct TaskRow: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        HStack(alignment: .center, spacing: Space.xs) {
+        HStack(alignment: .center, spacing: Space.xxs) {
             SkyCheckbox(isOn: model.isDone, isEnabled: !model.isProjection, title: model.task.title, action: onToggle)
-                .padding(.leading, Space.xs)
+                .padding(.leading, Space.xxs)
 
             Button(action: onOpen) {
                 HStack(spacing: Space.sm) {
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: 2) {
                         Text(model.task.title)
-                            .font(SkyFont.rowTitle)
+                            .font(.system(.body, weight: .semibold))
                             .foregroundStyle(model.isDone ? SkyColor.inkSecondary : SkyColor.ink)
                             .strikethrough(model.isDone, color: SkyColor.inkSecondary)
                             .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 2)
                             .multilineTextAlignment(.leading)
-                        metaLine
+                        if let subtitle = subtitle, !model.isDone {
+                            Text(subtitle.text)
+                                .font(.system(.caption, weight: subtitle.urgent ? .semibold : .regular))
+                                .foregroundStyle(subtitle.urgent ? SkyColor.pinkText : SkyColor.inkSecondary)
+                                .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 1)
+                        }
                     }
                     Spacer(minLength: 0)
-                    PriorityMark(priority: model.task.priority)
+                    if !model.isDone {
+                        if model.task.priority == .high || model.task.priority == .medium {
+                            PriorityMark(priority: model.task.priority)
+                        } else {
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundStyle(SkyColor.inkSecondary.opacity(0.7))
+                                .accessibilityHidden(true)
+                        }
+                    }
                 }
-                .padding(.vertical, compact ? Space.sm : Space.md)
+                .padding(.vertical, compact ? Space.xs : Space.sm)
                 .padding(.trailing, Space.md)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .accessibilityHint("Opens the task")
         }
-        .frame(minHeight: compact ? 60 : 72)
+        .frame(minHeight: compact ? 52 : 58)
         .card(radius: Radius.row)
         .accessibilityElement(children: .contain)
     }
 
-    private var metaLine: some View {
-        // At accessibility sizes the pieces stack instead of truncating one by one.
-        let layout = dynamicTypeSize.isAccessibilitySize
-            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 2))
-            : AnyLayout(HStackLayout(spacing: 6))
-        return layout {
-            if let list = model.list {
-                Circle().fill(SkyColor.list(list.color)).frame(width: 7, height: 7)
-                Text(list.name)
-            }
-            if let when = whenText {
-                Text("·")
-                Text(when).foregroundStyle(model.isOverdue && !model.isDone ? SkyColor.pinkText : SkyColor.inkSecondary)
-            }
-            if model.task.isRecurring {
-                Image(systemName: "repeat").imageScale(.small).accessibilityLabel("Repeats")
-            }
-            if model.task.hasReminder {
-                Image(systemName: "bell.fill").imageScale(.small).accessibilityLabel("Reminder set")
-            }
-            if !model.task.subtasks.isEmpty {
-                let p = model.task.subtaskProgress
-                Label("\(p.done)/\(p.total)", systemImage: "checklist")
-                    .labelStyle(.titleAndIcon)
-                    .accessibilityLabel("\(p.done) of \(p.total) subtasks done")
-            }
-        }
-        .font(SkyFont.meta)
-        .foregroundStyle(SkyColor.inkSecondary)
-        .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1)
-    }
+    private struct Subtitle { let text: String; let urgent: Bool }
 
-    private var whenText: String? {
+    /// One line, most important first: overdue / due today, then time, list and extras.
+    private var subtitle: Subtitle? {
         let day = model.displayDay ?? model.task.dueDay
         var parts: [String] = []
+        var urgent = false
         if let day {
             if model.isOverdue && day < model.today {
-                parts.append(RelativeDayFormatter.string(for: day, today: model.today))
+                parts.append("Overdue · \(RelativeDayFormatter.string(for: day, today: model.today))")
+                urgent = true
+            } else if day == model.today && model.task.dueTime == nil && !model.showDay {
+                parts.append("Due Today")
+                urgent = true
             } else if model.showDay || day != model.today {
                 parts.append(RelativeDayFormatter.string(for: day, today: model.today))
             }
         }
-        if let time = model.task.dueTime { parts.append(Format.time(time)) }
-        if parts.isEmpty, day == model.today { parts.append("Today") }
-        return parts.isEmpty ? nil : parts.joined(separator: " ")
+        if let time = model.task.dueTime {
+            parts.append(Format.time(time))
+            if model.isOverdue && day == model.today { urgent = true }
+        }
+        if let list = model.list, model.showDay { parts.append(list.name) }
+        if model.task.isRecurring { parts.append("Repeats") }
+        if !model.task.subtasks.isEmpty {
+            let p = model.task.subtaskProgress
+            parts.append("\(p.done)/\(p.total) subtasks")
+        }
+        return parts.isEmpty ? nil : Subtitle(text: parts.joined(separator: " · "), urgent: urgent)
     }
 }
 
@@ -328,15 +324,14 @@ struct UndoToast: View {
             Spacer(minLength: Space.xs)
             Button("Undo", action: onUndo)
                 .font(.system(.subheadline, weight: .bold))
-                .foregroundStyle(SkyColor.skyPastel)
+                .foregroundStyle(SkyColor.lightSky)
                 .frame(minWidth: 44, minHeight: 44)
                 .accessibilityIdentifier("undoButton")
         }
         .padding(.leading, Space.md)
         .padding(.trailing, Space.xs)
-        .background(SkyColor.raisedHigh, in: Capsule())
-        .overlay(Capsule().strokeBorder(Color.white.opacity(0.08), lineWidth: 1))
-        .shadow(color: SkyColor.shadow, radius: 14, x: 0, y: 8)
+        .background(SkyColor.ink, in: Capsule())
+        .shadow(color: Color.black.opacity(0.2), radius: 14, x: 0, y: 8)
         .padding(.horizontal, Space.md)
         .accessibilityElement(children: .contain)
     }

@@ -163,6 +163,20 @@ public enum TaskQueries {
         }
     }
 
+    /// Share of this week's work that is done: completions credited this week divided by
+    /// (those completions + still-open tasks due between the week start and today).
+    /// nil when nothing was due or done yet this week (show "–", never a fake 0% or 100%).
+    public static func weekCompletionRate(_ data: AppData, today: DayKey) -> Double? {
+        let start = today.startOfWeek(firstWeekday: data.settings.firstWeekday)
+        let done = data.events.filter { $0.creditedDay >= start && $0.creditedDay <= today }.count
+        let open = data.tasks.filter { t in
+            guard !t.isCompleted, let due = t.dueDay else { return false }
+            return due >= start && due <= today
+        }.count
+        let total = done + open
+        return total == 0 ? nil : Double(done) / Double(total)
+    }
+
     public struct SearchResults: Hashable, Sendable {
         public var lists: [TaskList]
         public var tasks: [TaskItem]

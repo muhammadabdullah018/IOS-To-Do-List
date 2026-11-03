@@ -5,18 +5,18 @@ A calm, offline-first iPhone to-do app for students and young professionals: nat
 **Status:** feature-complete v1 source. Core logic is compiled and tested (94 tests). The iOS app and widget are type-checked against SDK-shaped stubs but **have not yet been built in Xcode or run on a simulator/device**. See [`QA_REPORT.md`](QA_REPORT.md).
 
 ## Features
-- **Today**: sky-blue hero (date, greeting with optional name, "You have N tasks left today", progress bar, next task, calendar), status pills (this week · streak · done), big pastel task cards in do-next order, Coming up, Done today, completion animation + haptics, undo toast, goal-reached pixel burst.
-- **Look**: night canvas, bright rounded hero cards, pastel cards, floating capsule tab bar with a pink +, original pixel clouds. Preview: [`docs/today-preview.png`](docs/today-preview.png) (approximate render, not an iOS screenshot).
+- **Today**: illustrated pixel-sky header that follows the time of day (day / sunset / night), greeting with optional name, soft-pink streak badge, progress ring card ("4 of 6 Tasks completed today"), task rows with square checkboxes, "Due Today" and priority flags, completed tasks kept below (checked), Coming up, undo toast, goal-reached pixel burst.
+- **Look**: built from the Skyday reference sheet: Sky Blue `#0593C6`, White `#FCFFFF`, Hot Pink `#D83995`, Light Sky `#D7F2FF`, Soft Pink `#FFE6F4`; original generated pixel art (`Tools/make_sky_art.py`); native tab bar. Preview: [`docs/screens-preview.png`](docs/screens-preview.png) (approximate render, not an iOS screenshot).
 - **Tasks**: title, notes, list, priority, due date, due time, reminder, repeat (daily, weekdays, weekly, every 2 weeks, monthly, yearly, custom interval and weekdays), subtasks. Quick date chips, edit, complete/reopen, delete with undo, move to tomorrow (one-off) or skip this time (repeating).
 - **Lists**: Inbox + custom lists with icon and colour, counts, search across tasks/notes/subtasks/lists, list detail with sort (smart, due, priority, title, manual drag-to-reorder), swipe actions, completed section, safe delete (tasks move to Inbox).
 - **Plan**: week strip with busy-day markers, per-day agenda including projected repeats and past completions.
-- **Progress**: current and best streak, milestone track, daily goal stepper, this-week chart with goal line, 5-week activity grid, badges.
+- **Progress**: streak bubble on a floating island, Tasks Done / This Week % / Milestones cards, weekly activity bars (today in pink), daily goal stepper, 5-week activity grid, badges.
 - **Reminders**: per-task (at time or N minutes before; date-only at a default time), recurring look-ahead, optional morning plan and evening check-in, Complete / Remind-in-1-hour actions, contextual permission, denied-state guidance.
 - **Widgets**: small and medium Home Screen widgets with deep links.
 - **Data**: local JSON with atomic saves, corruption protection, backup export/import, erase-all with undo. No account, no tracking, no network.
 - **Accessibility**: Dynamic Type layouts, VoiceOver labels and values, 44pt targets, Reduce Motion alternatives, WCAG-checked text colours, dark appearance.
 
-Exactly three tabs: Today, Lists, Progress. The app uses its night appearance regardless of the system setting (one line in `RootView` to change).
+Exactly three tabs: Today, Lists, Progress. The app uses its light appearance; night is shown by the Today header art after 8 PM.
 
 ## Run it on an iPhone (macOS)
 Requirements: macOS with **Xcode 16 or newer** (iOS 17+ deployment target).

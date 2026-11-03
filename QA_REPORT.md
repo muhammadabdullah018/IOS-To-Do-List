@@ -5,7 +5,7 @@ Environment: Linux (Ubuntu 24.04) cloud container, Swift 6.0.3 (swift-corelibs-f
 ## Passed (actually run)
 | Check | Command | Result |
 |---|---|---|
-| Domain, persistence, reminders, streaks | `cd Packages/SkydayKit && swift test` | **94 tests, 0 failures** (DayKey 8, Recurrence 11, Streak 17, ReminderPlanner 12, Store 37, Query & Support 9) |
+| Domain, persistence, reminders, streaks | `cd Packages/SkydayKit && swift test` | **95 tests, 0 failures** (DayKey 8, Recurrence 11, Streak 17, ReminderPlanner 12, Store 37, Query & Support 10) |
 | App + widget type-check vs SDK-shaped stubs | `cd Tools/LinuxTypecheck && swift build --build-tests` | **Build complete**, 0 errors (includes SkydayUITests vs XCUITest stubs) |
 | Xcode project structure | `swift Tools/validate_xcodeproj.swift` | **OK: 46 objects, 3 targets, all references resolve** (also verified it fails on a deliberately broken reference) |
 | Skill/agent frontmatter | Python YAML check | 17 skills + 5 agents valid; agent skill references resolve; 7 original skills byte-identical above their appended note |
@@ -65,6 +65,9 @@ Key behaviours covered by tests:
 | Pink allowed as a list colour | **Kept by decision**: in v2 lists are pastel cards; the user's own mockup uses a pink Personal list |
 | Plan completion has no linger/celebration; no month jump | Not fixed (minor) |
 
+## Design passes
+1. **v1** pixel-sky light design. 2. **v2** night canvas (the user's first reference). 3. **v3 (current)** the user's Skyday reference sheet: light, illustrated pixel-sky headers, white cards, native tab bar. Behaviour fixes from the reviews carried through all passes. The v2-specific findings (toast overlapping the floating bar, hero cloud strip) no longer apply: v3 uses a native tab bar and fixed text zones in the art.
+
 ## Failed
 None of the checks that could run here failed at the time of writing.
 
@@ -73,7 +76,7 @@ None of the checks that could run here failed at the time of writing.
 |---|---|
 | Real iOS SDK build of app + widget | `xcodebuild -project Skyday.xcodeproj -scheme Skyday -destination 'platform=iOS Simulator,name=iPhone 16' build` |
 | Unit tests inside Xcode + UI tests | same with `test` |
-| Visual check: SE, 16, Pro Max; AX3/AX5 text; Reduce Motion; VoiceOver pass on Today | Simulator + Accessibility Inspector |
+| Visual check: SE, 16, Pro Max; AX3/AX5 text (sky title wrapping over the art); Reduce Motion; VoiceOver pass on Today | Simulator + Accessibility Inspector |
 | Keyboard + medium-detent task sheet on SE | Simulator |
 | Notification permission timing, denied flow, delivery, Complete/Snooze from Lock Screen with app killed | Physical device |
 | Widget refresh after edits, midnight rollover, deep links; App Group provisioning | Device with a signed team |
@@ -82,6 +85,7 @@ None of the checks that could run here failed at the time of writing.
 ## Known limitations / risks
 - The stub type-check is not the real SDK. Expect a few signature mismatches on the first Xcode build; they should be small and local.
 - In Swift 5 mode, Xcode may warn about main-actor UIKit calls from `Haptics` and non-Sendable notification types. These are warnings, not errors; they'd become errors under Swift 6 mode.
-- Forced night appearance (user-directed design). Light mode needs a one-line change plus a visual pass.
-- `docs/today-preview.png` is a Pillow approximation (DejaVu font, placeholder icons), not a screenshot.
+- The app is fixed to light appearance (the reference is a daytime design); system dark mode is not supported. Night is shown by the Today header art.
+- `docs/screens-preview.png` composites the real header art, but fonts (DejaVu) and icons are stand-ins; it is not an iOS screenshot. Header art is cropped by `scaledToFill`, so on narrow phones (iPhone SE) the art edges crop more; check that text zones stay clear on device.
+- Header art PNGs are small (~220 px wide) and depend on `.interpolation(.none)`. If they look blurry on device, that modifier was dropped.
 - Persistence is JSON, not SwiftData (decision record in `ARCHITECTURE.md`). Saves are synchronous on the main actor; measure on device.

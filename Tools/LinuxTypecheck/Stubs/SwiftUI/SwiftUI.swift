@@ -212,6 +212,7 @@ public enum Edge: Int8, CaseIterable {
 }
 
 public struct EdgeInsets: Equatable {
+    public var top: CGFloat = 0, leading: CGFloat = 0, bottom: CGFloat = 0, trailing: CGFloat = 0
     public init() {}
     public init(top: CGFloat, leading: CGFloat, bottom: CGFloat, trailing: CGFloat) {}
 }
@@ -253,6 +254,11 @@ public struct Color: View, ShapeStyle, Hashable {
 extension ShapeStyle where Self == Color {
     public static var white: Color { .white }
     public static var clear: Color { .clear }
+}
+
+public struct LinearGradient: ShapeStyle, View {
+    public init(colors: [Color], startPoint: UnitPoint, endPoint: UnitPoint) {}
+    public var body: Never { fatalError() }
 }
 
 public struct HierarchicalShapeStyle: ShapeStyle {
@@ -330,6 +336,9 @@ public struct Text: View, Equatable {
 public struct Image: View {
     public init(systemName: String) {}
     public init(_ name: String) {}
+    public enum Interpolation { case none, low, medium, high }
+    public func resizable() -> Image { self }
+    public func interpolation(_ i: Interpolation) -> Image { self }
     public enum Scale { case small, medium, large }
     public var body: Never { fatalError() }
 }
@@ -535,7 +544,7 @@ extension DynamicViewContent {
     public func onMove(perform action: ((IndexSet, Int) -> Void)?) -> some DynamicViewContent { self }
 }
 
-public struct GeometryProxy { public var size: CGSize { .zero } }
+public struct GeometryProxy { public var size: CGSize { .zero }; public var safeAreaInsets: EdgeInsets { EdgeInsets() } }
 public struct ViewDimensions {
     public var width: CGFloat { 0 }
     public var height: CGFloat { 0 }
@@ -726,6 +735,8 @@ extension View {
     public func fixedSize() -> some View { _V() }
     public func offset(x: CGFloat = 0, y: CGFloat = 0) -> some View { _V() }
     public func aspectRatio(_ ratio: CGFloat? = nil, contentMode: ContentMode) -> some View { _V() }
+    public func scaledToFill() -> some View { _V() }
+    public func scaledToFit() -> some View { _V() }
     public func layoutPriority(_ value: Double) -> some View { _V() }
     public func ignoresSafeArea(_ regions: SafeAreaRegions = .all, edges: Edge.Set = .all) -> some View { _V() }
 

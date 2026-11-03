@@ -91,7 +91,7 @@ struct ListDetailView: View {
         }
         .listStyle(.insetGrouped)
         .scrollContentBackground(.hidden)
-        .background(SkyColor.canvas.ignoresSafeArea())
+        .background(SkyColor.page.ignoresSafeArea())
         .navigationTitle(list.name)
         .navigationBarTitleDisplayMode(.large)
         .toolbar {

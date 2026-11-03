@@ -6,102 +6,123 @@ struct ProgressScreen: View {
     @Environment(SkydayStore.self) private var store
     @Environment(AppRouter.self) private var router
 
+    private let headerHeight: CGFloat = 262
+
     var body: some View {
         let summary = store.streak
         let week = store.thisWeek
         let activity = store.activity(weeks: 5)
+        let unlocked = store.achievements.filter(\.isUnlocked).count
 
-        ScrollView {
-            VStack(alignment: .leading, spacing: Space.lg) {
-                ProgressHero(summary: summary) { router.present(.settings) }
-                DailyGoalCard(summary: summary) { newGoal in
-                    Haptics.selection()
-                    store.setDailyGoal(newGoal)
-                }
+        GeometryReader { geo in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    SkyHeader(scene: .progress, height: headerHeight, topInset: geo.safeAreaInsets.top) {
+                        VStack(spacing: 0) {
+                            HStack(alignment: .top) {
+                                SkyTitle(text: "Progress")
+                                Spacer()
+                                SkyCircleButton(systemImage: "gearshape.fill", label: "Settings") {
+                                    router.present(.settings)
+                                }
+                                .accessibilityIdentifier("settingsButton")
+                            }
+                            Spacer(minLength: Space.xs)
+                            StreakBubble(summary: summary)
+                            // Leaves the floating island in the art visible under the bubble.
+                            Spacer(minLength: 76)
+                        }
+                        .frame(height: headerHeight - Space.sm)
+                    }
 
-                VStack(alignment: .leading, spacing: Space.sm) {
-                    SectionHeader(title: "This week")
-                    WeekChart(days: week, today: store.today, calendar: store.calendar)
-                }
+                    VStack(alignment: .leading, spacing: Space.lg) {
+                        HStack(spacing: Space.sm) {
+                            StatCard(value: "\(summary.totalCompletions)", caption: "Tasks Done") {
+                                Image(systemName: "checkmark.square.fill")
+                                    .font(.system(size: 26, weight: .semibold))
+                                    .foregroundStyle(SkyColor.sky)
+                            }
+                            StatCard(value: store.weekCompletionRate.map { "\(Int(($0 * 100).rounded()))%" } ?? "–",
+                                     caption: "This Week") {
+                                Image(systemName: "chart.bar.fill")
+                                    .font(.system(size: 26, weight: .semibold))
+                                    .foregroundStyle(SkyColor.sky)
+                            }
+                            StatCard(value: "\(unlocked)", caption: unlocked == 1 ? "Milestone" : "Milestones") {
+                                Image(systemName: "star.fill")
+                                    .font(.system(size: 26, weight: .semibold))
+                                    .foregroundStyle(SkyColor.star)
+                            }
+                        }
 
-                VStack(alignment: .leading, spacing: Space.sm) {
-                    SectionHeader(title: "Last 5 weeks")
-                    ActivityGrid(days: activity, calendar: store.calendar)
-                }
+                        VStack(alignment: .leading, spacing: Space.sm) {
+                            SectionHeader(title: "Weekly Activity")
+                            WeekChart(days: week, today: store.today, calendar: store.calendar)
+                        }
 
-                StatsRow(summary: summary, weekTotal: week.reduce(0) { $0 + $1.completions })
+                        DailyGoalCard(summary: summary) { newGoal in
+                            Haptics.selection()
+                            store.setDailyGoal(newGoal)
+                        }
 
-                VStack(alignment: .leading, spacing: Space.sm) {
-                    SectionHeader(title: "Little victories")
-                    BadgeGrid(achievements: store.achievements)
+                        VStack(alignment: .leading, spacing: Space.sm) {
+                            SectionHeader(title: "Last 5 weeks")
+                            ActivityGrid(days: activity, calendar: store.calendar)
+                        }
+
+                        VStack(alignment: .leading, spacing: Space.sm) {
+                            SectionHeader(title: "Little victories")
+                            BadgeGrid(achievements: store.achievements)
+                        }
+                    }
+                    .padding(.horizontal, Space.md)
+                    .padding(.top, -26)
+                    .padding(.bottom, Space.xl)
                 }
             }
-            .padding(.horizontal, Space.md)
-            .padding(.top, Space.xs)
-            .padding(.bottom, Space.lg)
+            .scrollIndicators(.hidden)
+            .ignoresSafeArea(edges: .top)
+            .background(SkyColor.page.ignoresSafeArea())
         }
-        .scrollIndicators(.hidden)
-        .background(SkyColor.canvas.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
     }
 }
 
-/// Pink-pastel hero: pink is Skyday's milestone colour, so the streak owns it here.
-struct ProgressHero: View {
+/// White cloud-like bubble sitting above the floating island: flame, big streak number,
+/// "Day Streak", and the next milestone.
+struct StreakBubble: View {
     let summary: StreakEngine.Summary
-    let onSettings: () -> Void
 
     var body: some View {
         let next = AchievementEngine.nextMilestone(after: summary.current)
-        let previous = AchievementEngine.streakMilestones.last { $0 <= summary.current } ?? 0
-        let span = max(1, next - previous)
-        let segments = min(span, 14)
-        let filledSegments = Int((Double(summary.current - previous) / Double(span) * Double(segments)).rounded(.down))
-
-        HeroCard(fill: SkyColor.pinkPastel, clouds: false) {
-            HStack(alignment: .top) {
-                Text("Your momentum")
-                    .font(SkyFont.overline)
-                    .textCase(.uppercase)
-                    .tracking(1.1)
-                    .foregroundStyle(SkyColor.cardInkSecondary)
-                Spacer()
-                InkCircleButton(systemImage: "gearshape.fill", label: "Settings", action: onSettings)
-                    .accessibilityIdentifier("settingsButton")
-            }
-            HStack(alignment: .firstTextBaseline, spacing: Space.xs) {
+        VStack(spacing: 2) {
+            HStack(alignment: .center, spacing: 6) {
+                Image(systemName: "flame.fill")
+                    .font(.system(size: 34, weight: .bold))
+                    .foregroundStyle(SkyColor.flame)
                 Text("\(summary.current)")
-                    .font(.system(size: 64, weight: .heavy, design: .rounded))
-                    .foregroundStyle(SkyColor.pinkOnCard)
+                    .font(.system(size: 46, weight: .heavy, design: .rounded))
+                    .foregroundStyle(SkyColor.ink)
                     .contentTransition(.numericText())
                     .minimumScaleFactor(0.6)
-                Text("day streak")
-                    .font(.system(.title2, design: .rounded, weight: .bold))
-                    .foregroundStyle(SkyColor.cardInk)
-                Spacer(minLength: 0)
-                PixelSprite(sprite: Sprite.streakStar, pixel: 5)
-                    .opacity(summary.current > 0 ? 1 : 0.35)
-                    .accessibilityHidden(true)
             }
-            HStack(spacing: 4) {
-                ForEach(0..<segments, id: \.self) { i in
-                    Rectangle()
-                        .fill(i < filledSegments ? SkyColor.pink : SkyColor.cardInk.opacity(0.14))
-                        .frame(height: 12)
-                }
-            }
-            .accessibilityHidden(true)
-            Text("Next milestone: \(next) days (\(next - summary.current) to go) · Best: \(summary.longest)")
-                .font(.system(.subheadline, weight: .semibold))
-                .foregroundStyle(SkyColor.cardInk)
-            if summary.restDayInUse {
-                Label("Rest day used this week. Your streak is safe.", systemImage: "moon.zzz.fill")
-                    .font(SkyFont.meta)
-                    .foregroundStyle(SkyColor.cardInkSecondary)
-            }
+            Text("Day Streak")
+                .font(.system(.subheadline, design: .rounded, weight: .bold))
+                .foregroundStyle(SkyColor.ink)
+            Text(summary.restDayInUse ? "Rest day used · streak safe" : "Next: \(next) days · Best \(summary.longest)")
+                .font(SkyFont.caption)
+                .foregroundStyle(SkyColor.inkSecondary)
         }
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel("Current streak \(summary.current) days. Next milestone \(next) days. Best \(summary.longest) days.")
+        .padding(.horizontal, Space.xl)
+        .padding(.vertical, Space.sm)
+        .background(Color.white, in: RoundedRectangle(cornerRadius: 26, style: .continuous))
+        .overlay(alignment: .topTrailing) {
+            PixelSprite(sprite: Sprite.twinkle, pixel: 2, palette: PixelPalette(colors: ["T": SkyColor.star]))
+                .offset(x: -10, y: 10)
+        }
+        .shadow(color: Color(hex: 0x03506F, alpha: 0.18), radius: 12, x: 0, y: 6)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(summary.current) day streak. Next milestone \(next) days. Best \(summary.longest) days.")
     }
 }
 
@@ -157,8 +178,8 @@ struct WeekChart: View {
                 VStack(spacing: 0) {
                     Spacer(minLength: 0)
                     Rectangle()
-                        .fill(SkyColor.pink.opacity(0.5))
-                        .frame(height: 2)
+                        .fill(SkyColor.inkSecondary.opacity(0.35))
+                        .frame(height: 1.5)
                         .padding(.bottom, chartHeight * CGFloat(goal) / CGFloat(maxValue) - 1)
                 }
                 .accessibilityHidden(true)
@@ -168,10 +189,6 @@ struct WeekChart: View {
                         let h = max(6, chartHeight * CGFloat(status.completions) / CGFloat(maxValue))
                         RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                             .fill(fill(for: status))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
-                                    .strokeBorder(SkyColor.onCanvas, lineWidth: status.day == today ? 2 : 0)
-                            )
                             .frame(maxWidth: .infinity)
                             .frame(height: status.day > today ? 6 : h)
                             .accessibilityElement()
@@ -194,9 +211,9 @@ struct WeekChart: View {
             .accessibilityHidden(true)
 
             HStack(spacing: Space.md) {
-                LegendDot(color: SkyColor.pink, label: "Goal met")
-                LegendDot(color: SkyColor.sky, label: "Some done")
-                LegendDot(color: SkyColor.pink.opacity(0.5), label: "Goal", isLine: true)
+                LegendDot(color: SkyColor.sky, label: "Goal met")
+                LegendDot(color: Color(hex: 0x9ED8F2), label: "Some done")
+                LegendDot(color: SkyColor.pink, label: "Today")
                 Spacer()
             }
         }
@@ -205,8 +222,9 @@ struct WeekChart: View {
     }
 
     private func fill(for status: StreakEngine.DayStatus) -> Color {
+        if status.day == today { return SkyColor.pink }
         if status.day > today { return SkyColor.track }
-        return status.kind == .qualified ? SkyColor.pink : SkyColor.sky
+        return status.kind == .qualified ? SkyColor.sky : Color(hex: 0x9ED8F2)
     }
 }
 
@@ -254,9 +272,9 @@ struct ActivityGrid: View {
                 }
             }
             HStack(spacing: Space.md) {
-                LegendDot(color: SkyColor.pink, label: "Goal met")
-                LegendDot(color: SkyColor.sky, label: "Some done")
-                LegendDot(color: SkyColor.skySoft, label: "Rest day")
+                LegendDot(color: SkyColor.sky, label: "Goal met")
+                LegendDot(color: Color(hex: 0x9ED8F2), label: "Some done")
+                LegendDot(color: SkyColor.lightSky, label: "Rest day")
                 Spacer()
             }
         }
@@ -269,17 +287,17 @@ struct ActivityGrid: View {
         let shape = RoundedRectangle(cornerRadius: 4, style: .continuous)
         switch status.kind {
         case .qualified:
-            shape.fill(SkyColor.pink)
-        case .partial:
             shape.fill(SkyColor.sky)
+        case .partial:
+            shape.fill(Color(hex: 0x9ED8F2))
         case .rest:
             shape.fill(SkyColor.skySoft).overlay(Image(systemName: "moon.fill").font(.system(size: 9)).foregroundStyle(SkyColor.deepSky))
         case .today:
-            shape.fill(status.completions > 0 ? SkyColor.sky : SkyColor.surface)
-                .overlay(shape.strokeBorder(SkyColor.onCanvas, lineWidth: 2))
+            shape.fill(status.completions > 0 ? Color(hex: 0x9ED8F2) : SkyColor.surface)
+                .overlay(shape.strokeBorder(SkyColor.pink, lineWidth: 2))
         case .missed:
             // Visible outline (≥ 3:1 against the card) so "missed" reads as a real state.
-            shape.strokeBorder(SkyColor.onCanvasSecondary.opacity(0.7), lineWidth: 1.5)
+            shape.strokeBorder(SkyColor.inkSecondary.opacity(0.55), lineWidth: 1.5)
         case .future, .beforeHistory:
             shape.fill(SkyColor.surfaceSunken.opacity(0.6))
         }
@@ -295,35 +313,6 @@ struct ActivityGrid: View {
         case .future: return "Upcoming"
         case .beforeHistory: return "Before you started"
         }
-    }
-}
-
-struct StatsRow: View {
-    let summary: StreakEngine.Summary
-    let weekTotal: Int
-
-    var body: some View {
-        HStack(spacing: Space.sm) {
-            stat(value: "\(summary.longest)", label: "Best streak")
-            stat(value: "\(weekTotal)", label: "This week")
-            stat(value: "\(summary.totalCompletions)", label: "All time")
-        }
-    }
-
-    private func stat(value: String, label: String) -> some View {
-        VStack(spacing: 2) {
-            Text(value)
-                .font(.system(.title2, design: .rounded, weight: .bold))
-                .foregroundStyle(SkyColor.ink)
-                .contentTransition(.numericText())
-            Text(label)
-                .font(SkyFont.caption)
-                .foregroundStyle(SkyColor.inkSecondary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, Space.md)
-        .card(radius: Radius.row)
-        .accessibilityElement(children: .combine)
     }
 }
 

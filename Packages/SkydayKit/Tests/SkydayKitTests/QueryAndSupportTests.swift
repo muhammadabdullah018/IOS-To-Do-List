@@ -81,6 +81,17 @@ final class QueryAndSupportTests: XCTestCase {
         XCTAssertEqual(h.store.tasks(in: id, sort: .smart).last?.title, "a undated")
     }
 
+    func testWeekCompletionRate() async {
+        let h = StoreHarness() // Tue 2026-11-03, weeks start Monday
+        XCTAssertNil(h.store.weekCompletionRate, "nothing due or done yet")
+        let a = h.add("Mon task", due: T.day(2026, 11, 2))
+        h.add("Tue task", due: T.day(2026, 11, 3))
+        h.add("Next week", due: T.day(2026, 11, 10))
+        h.add("Last week", due: T.day(2026, 10, 30)) // before the week: excluded
+        h.store.complete(a.id)
+        XCTAssertEqual(h.store.weekCompletionRate ?? -1, 0.5, accuracy: 0.0001)
+    }
+
     func testDeepLinks() async {
         let id = UUID()
         for link in [DeepLink.today, .newTask, .lists, .progress, .task(id)] {

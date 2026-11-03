@@ -1,20 +1,19 @@
 import SwiftUI
 import SkydayKit
 
-/// The primary screen. In two seconds it answers: what's due, what's next, how far along
-/// am I, what's coming, and is my streak safe. Each number appears once:
-/// hero = tasks left + progress bar + next task; pills = this week / streak / done.
+/// The primary screen (reference layout): illustrated sky header with greeting and streak
+/// badge → progress ring card → "Today" task rows (open first, completed at the bottom,
+/// checked) → Coming up.
 struct TodayView: View {
     @Environment(SkydayStore.self) private var store
     @Environment(AppRouter.self) private var router
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    /// Tasks just completed stay visible (checked) for a moment so the card can settle
-    /// instead of vanishing under the finger. Persistence happens immediately regardless.
-    @State private var lingering: [UUID: TaskItem] = [:]
-    @State private var showDoneToday = false
     @State private var celebrationStart: Date?
+    @State private var showAllOpen = false
+
+    private let headerHeight: CGFloat = 236
+    private let openLimit = 6
 
     var body: some View {
         let overview = store.todayOverview
@@ -22,156 +21,168 @@ struct TodayView: View {
         let today = store.today
         let hasAnyTasks = !store.data.tasks.isEmpty
 
-        ScrollView {
-            VStack(alignment: .leading, spacing: Space.lg) {
-                if let error = store.lastSaveError {
-                    SaveErrorBanner(message: error)
-                }
+        GeometryReader { geo in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    TimelineView(.periodic(from: .now, by: 300)) { context in
+                        let hour = store.calendar.component(.hour, from: context.date)
+                        SkyHeader(scene: SkyScene.today(hour: hour), height: headerHeight, topInset: geo.safeAreaInsets.top) {
+                            header(hour: hour, today: today, streak: streak, hasAnyTasks: hasAnyTasks)
+                        }
+                    }
 
-                TimelineView(.periodic(from: .now, by: 300)) { context in
-                    TodayHero(today: today, now: context.date, calendar: store.calendar, overview: overview,
-                              hasAnyTasks: hasAnyTasks, name: store.settings.displayName,
-                              onAvatar: { router.present(.settings) },
-                              onCalendar: { router.todayPath.append(.plan(today)) })
-                }
+                    VStack(alignment: .leading, spacing: Space.lg) {
+                        if let error = store.lastSaveError {
+                            SaveErrorBanner(message: error)
+                        }
 
-                if hasAnyTasks {
-                    statusPills(overview: overview, streak: streak, today: today)
-                }
+                        if hasAnyTasks {
+                            ProgressSummaryCard(done: overview.doneCount, planned: overview.plannedCount) {
+                                router.todayPath.append(.plan(today))
+                            }
+                            .overlay {
+                                if let start = celebrationStart, !reduceMotion {
+                                    PixelBurst(start: start).frame(width: 280, height: 200).allowsHitTesting(false)
+                                }
+                            }
+                        }
 
-                tasksSection(overview, today: today, hasAnyTasks: hasAnyTasks)
+                        todaySection(overview, today: today, hasAnyTasks: hasAnyTasks)
 
-                if !overview.comingUp.isEmpty {
-                    comingUpSection(overview, today: today)
-                }
-
-                if showDoneToday && overview.doneCount > 0 {
-                    doneTodaySection(overview)
+                        if !overview.comingUp.isEmpty {
+                            comingUpSection(overview, today: today)
+                        }
+                    }
+                    .padding(.horizontal, Space.md)
+                    .padding(.top, hasAnyTasks ? -30 : Space.xs) // the progress card overlaps the art
+                    .padding(.bottom, Space.xl)
                 }
             }
-            .padding(.horizontal, Space.md)
-            .padding(.top, Space.xs)
-            .padding(.bottom, Space.lg)
+            .scrollIndicators(.hidden)
+            .ignoresSafeArea(edges: .top)
+            .background(SkyColor.page.ignoresSafeArea())
         }
-        .scrollIndicators(.hidden)
-        .background(SkyColor.canvas.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
     }
 
-    // MARK: Status pills
+    // MARK: Header
 
-    private func statusPills(overview: TodayOverview, streak: StreakEngine.Summary, today: DayKey) -> some View {
-        let layout = dynamicTypeSize.isAccessibilitySize
-            ? AnyLayout(VStackLayout(spacing: Space.xs))
-            : AnyLayout(HStackLayout(spacing: Space.xs))
-        return layout {
-            StatusPill(value: "\(overview.comingUp.count)", caption: "This week", tint: SkyColor.skyPastel,
-                       action: { router.todayPath.append(.plan(today.adding(days: 1))) }) {
-                Image(systemName: "calendar")
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(SkyColor.cardInk)
+    private func header(hour: Int, today: DayKey, streak: StreakEngine.Summary, hasAnyTasks: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(Format.overlineDate(today, calendar: store.calendar))
+                        .font(SkyFont.overline)
+                        .textCase(.uppercase)
+                        .tracking(1.1)
+                        .foregroundStyle(SkyColor.onSky)
+                        .shadow(color: SkyColor.skyTextShadow, radius: 2, x: 0, y: 1)
+                    HStack(alignment: .lastTextBaseline, spacing: 8) {
+                        SkyTitle(text: greeting(hour: hour), font: .system(.title, design: .rounded, weight: .bold))
+                        Image(systemName: hour >= 20 || hour < 5 ? "moon.stars.fill" : "sun.max.fill")
+                            .font(.system(size: 22, weight: .bold))
+                            .foregroundStyle(SkyColor.star)
+                            .shadow(color: SkyColor.skyTextShadow, radius: 2, x: 0, y: 1)
+                            .accessibilityHidden(true)
+                    }
+                }
+                Spacer(minLength: Space.sm)
+                SkyCircleButton(systemImage: "calendar", label: "Plan and calendar") {
+                    router.todayPath.append(.plan(today))
+                }
             }
-            StatusPill(value: streak.current == 0 ? "0" : "\(streak.current)d",
-                       caption: streak.todayQualified ? "Streak safe" : "Day streak",
-                       tint: SkyColor.pinkPastel,
-                       action: {
-                           Haptics.selection()
-                           router.tab = .progress
-                       }) {
-                PixelSprite(sprite: Sprite.streakStar, pixel: 3)
-            }
-            StatusPill(value: "\(overview.doneCount)", caption: "Done today", tint: SkyColor.cloudPastel,
-                       action: {
-                           withAnimation(reduceMotion ? nil : Motion.settle) { showDoneToday.toggle() }
-                       }) {
-                Image(systemName: "checkmark")
-                    .font(.system(size: 16, weight: .heavy))
-                    .foregroundStyle(SkyColor.cardInk)
-            }
-        }
-        .overlay {
-            if let start = celebrationStart, !reduceMotion {
-                PixelBurst(start: start).frame(width: 260, height: 200).allowsHitTesting(false)
+            Spacer(minLength: Space.sm)
+            if hasAnyTasks {
+                StreakBadge(summary: streak) {
+                    Haptics.selection()
+                    router.tab = .progress
+                }
             }
         }
+        // Fill the header so the badge sits on its lower edge, above the overlapping card.
+        .frame(height: headerHeight - Space.sm - 44, alignment: .topLeading)
     }
 
-    // MARK: Sections
+    private func greeting(hour: Int) -> String {
+        let base: String
+        switch hour {
+        case 5..<12: base = "Good Morning"
+        case 12..<17: base = "Good Afternoon"
+        case 17..<22: base = "Good Evening"
+        default: base = "Still Up"
+        }
+        let name = store.settings.displayName
+        return name.isEmpty ? base : "\(base),\n\(name)"
+    }
+
+    // MARK: Today list
 
     @ViewBuilder
-    private func tasksSection(_ overview: TodayOverview, today: DayKey, hasAnyTasks: Bool) -> some View {
-        let visible = visibleUpNext(overview, today: today)
-        let hiddenCount = max(0, overview.openCount - visible.filter { lingering[$0.id] == nil }.count)
+    private func todaySection(_ overview: TodayOverview, today: DayKey, hasAnyTasks: Bool) -> some View {
+        let open = overview.allActionable
+        let shown = showAllOpen ? open : Array(open.prefix(openLimit))
 
-        VStack(alignment: .leading, spacing: Space.sm) {
-            SectionHeader(title: "Today tasks", trailing: hasAnyTasks ? "See all" : nil) {
-                router.todayPath.append(.plan(today))
+        VStack(alignment: .leading, spacing: Space.xs) {
+            SectionAddHeader(title: "Today", addLabel: "New task for today") {
+                Haptics.tick()
+                router.present(.newTask(TaskPrefill(dueDay: today)))
             }
 
             if !hasAnyTasks {
-                EmptySkyState(title: "Start with one small thing",
-                              message: "A class, a deadline, or a habit you want to keep.",
+                EmptySkyState(title: "Your sky is clear",
+                              message: "Add your first task: a class, a deadline, or one small habit.",
                               actionTitle: "Add your first task") {
                     router.present(.newTask(TaskPrefill(dueDay: today)))
                 }
-            } else if visible.isEmpty {
-                ClearDayCard(allDone: overview.doneCount > 0) {
+            } else if open.isEmpty && overview.completedToday.isEmpty {
+                ClearDayCard {
                     router.present(.newTask(TaskPrefill(dueDay: today)))
                 }
-            } else {
-                ForEach(visible) { task in
-                    TaskCard(model: TaskRowModel(task: task, list: store.list(task.listID), isOverdue: store.isOverdue(task),
-                                                 today: today, completedOverride: lingering[task.id] != nil ? true : nil),
-                             onToggle: { complete(task) },
-                             onOpen: { router.present(.task(task.id)) })
-                        .contextMenu { taskMenu(task, today: today) }
-                        .transition(reduceMotion ? .opacity : .asymmetric(
-                            insertion: .opacity.combined(with: .move(edge: .bottom)),
-                            removal: .opacity.combined(with: .scale(scale: 0.96))))
-                }
-                if hiddenCount > 0 {
-                    Button {
-                        router.todayPath.append(.plan(today))
-                    } label: {
-                        Text(hiddenCount == 1 ? "1 more today" : "\(hiddenCount) more today")
-                            .font(.system(.subheadline, weight: .semibold))
-                            .foregroundStyle(SkyColor.onCanvas)
-                            .frame(maxWidth: .infinity, minHeight: 48)
-                            .background(SkyColor.raised, in: Capsule())
-                    }
-                    .buttonStyle(PressableButtonStyle())
+            }
+
+            ForEach(shown) { task in
+                TaskRow(model: TaskRowModel(task: task, list: store.list(task.listID), isOverdue: store.isOverdue(task), today: today),
+                        onToggle: { complete(task) },
+                        onOpen: { router.present(.task(task.id)) })
+                    .contextMenu { taskMenu(task, today: today) }
+                    .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .top)))
+            }
+
+            if open.count > openLimit {
+                Button {
+                    withAnimation(reduceMotion ? nil : Motion.settle) { showAllOpen.toggle() }
+                } label: {
+                    Text(showAllOpen ? "Show less" : "Show \(open.count - openLimit) more")
+                        .font(.system(.subheadline, weight: .semibold))
+                        .foregroundStyle(SkyColor.deepSky)
+                        .frame(maxWidth: .infinity, minHeight: 44)
                 }
             }
+
+            // Completed today stays visible, checked, like the reference.
+            ForEach(overview.completedToday) { event in
+                DoneEventRow(event: event, task: store.task(event.taskID)) { task in
+                    Haptics.tick()
+                    withAnimation(reduceMotion ? nil : Motion.settle) { store.reopen(task.id) }
+                } onOpen: { task in
+                    router.present(.task(task.id))
+                }
+                .transition(.opacity)
+            }
         }
-        .animation(reduceMotion ? nil : Motion.settle, value: visible.map(\.id))
+        .animation(reduceMotion ? nil : Motion.settle, value: open.map(\.id))
+        .animation(reduceMotion ? nil : Motion.settle, value: overview.completedToday.map(\.id))
     }
 
     private func comingUpSection(_ overview: TodayOverview, today: DayKey) -> some View {
-        VStack(alignment: .leading, spacing: Space.sm) {
+        VStack(alignment: .leading, spacing: Space.xs) {
             SectionHeader(title: "Coming up")
             ForEach(overview.comingUp.prefix(3)) { task in
-                TaskRow(model: TaskRowModel(task: task, list: store.list(task.listID), isOverdue: false,
-                                            today: today, showDay: true),
+                TaskRow(model: TaskRowModel(task: task, list: store.list(task.listID), isOverdue: false, today: today, showDay: true),
                         compact: true,
                         onToggle: { complete(task) },
                         onOpen: { router.present(.task(task.id)) })
                     .contextMenu { taskMenu(task, today: today) }
-            }
-        }
-    }
-
-    private func doneTodaySection(_ overview: TodayOverview) -> some View {
-        VStack(alignment: .leading, spacing: Space.sm) {
-            SectionHeader(title: "Done today", trailing: "Hide") {
-                withAnimation(reduceMotion ? nil : Motion.settle) { showDoneToday = false }
-            }
-            ForEach(overview.completedToday) { event in
-                DoneEventRow(event: event, task: store.task(event.taskID), list: store.list(event.listID)) { task in
-                    Haptics.tick()
-                    store.reopen(task.id)
-                } onOpen: { task in
-                    router.present(.task(task.id))
-                }
             }
         }
     }
@@ -190,25 +201,11 @@ struct TodayView: View {
         Button(role: .destructive) { store.deleteTask(task.id) } label: { Label("Delete", systemImage: "trash") }
     }
 
-    private func visibleUpNext(_ overview: TodayOverview, today: DayKey) -> [TaskItem] {
-        let live = overview.allActionable
-        let liveIDs = Set(live.map(\.id))
-        let extra = lingering.values.filter { !liveIDs.contains($0.id) }
-        let merged = (live + extra).sorted { TaskQueries.actionOrder($0, $1, today: today) }
-        return Array(merged.prefix(3 + extra.count))
-    }
-
     private func complete(_ task: TaskItem) {
-        guard lingering[task.id] == nil else { return } // ignore rapid re-taps
-        let outcome = store.complete(task.id)
+        let outcome = withAnimation(reduceMotion ? nil : Motion.settle) { store.complete(task.id) }
         guard outcome.didComplete else { return }
         Haptics.tick()
-        lingering[task.id] = task
         if outcome.reachedDailyGoal { celebrate() }
-        Task { @MainActor in
-            try? await Task.sleep(nanoseconds: 650_000_000)
-            withAnimation(reduceMotion ? nil : Motion.settle) { lingering[task.id] = nil }
-        }
     }
 
     private func celebrate() {
@@ -222,131 +219,43 @@ struct TodayView: View {
     }
 }
 
-// MARK: - Hero
-
-struct TodayHero: View {
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    let today: DayKey
-    let now: Date
-    let calendar: Calendar
-    let overview: TodayOverview
-    let hasAnyTasks: Bool
-    let name: String
-    let onAvatar: () -> Void
-    let onCalendar: () -> Void
-
-    var body: some View {
-        HeroCard {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(Format.overlineDate(today, calendar: calendar))
-                        .font(SkyFont.overline)
-                        .textCase(.uppercase)
-                        .tracking(1.1)
-                        .foregroundStyle(SkyColor.cardInk)
-                    Text(greeting)
-                        .font(.system(.subheadline, weight: .semibold))
-                        .foregroundStyle(SkyColor.cardInk)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                // Keep the cloud strip free of text.
-                .padding(.trailing, dynamicTypeSize.isAccessibilitySize ? 0 : HeroCard<EmptyView>.artStrip)
-                Spacer(minLength: Space.sm)
-                Button(action: onAvatar) { PixelAvatar(name: name) }
-                    .buttonStyle(PressableButtonStyle(scale: 0.92))
-                    .accessibilityLabel("Settings")
-                    .accessibilityIdentifier("todaySettingsButton")
-            }
-
-            Text(headline)
-                .font(SkyFont.headline)
-                .foregroundStyle(SkyColor.cardInk)
-                .fixedSize(horizontal: false, vertical: true)
-                .accessibilityAddTraits(.isHeader)
-
-            if overview.plannedCount > 0 {
-                InkProgressBar(fraction: overview.fraction)
-                    .accessibilityElement()
-                    .accessibilityLabel("Today's progress")
-                    .accessibilityValue("\(overview.doneCount) of \(overview.plannedCount) tasks done")
-            }
-
-            HStack(alignment: .center, spacing: Space.sm) {
-                Text(footer)
-                    .font(.system(.subheadline, weight: .semibold))
-                    .foregroundStyle(SkyColor.cardInk)
-                    .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
-                Spacer(minLength: Space.xs)
-                InkCircleButton(systemImage: "calendar", label: "Plan and calendar", action: onCalendar)
-            }
-        }
-    }
-
-    private var greeting: String {
-        let hour = calendar.component(.hour, from: now)
-        let base: String
-        switch hour {
-        case 5..<12: base = "Good morning"
-        case 12..<17: base = "Good afternoon"
-        case 17..<22: base = "Good evening"
-        default: base = "Still up"
-        }
-        return name.isEmpty ? base : "\(base), \(name)"
-    }
-
-    private var headline: String {
-        if !hasAnyTasks { return "Your sky is clear." }
-        let open = overview.openCount
-        if open == 0 && overview.doneCount > 0 { return "All clear. Nicely done." }
-        if open == 0 { return "Nothing due today." }
-        return open == 1 ? "You have 1 task left today" : "You have \(open) tasks left today"
-    }
-
-    /// One factual line: the next task, or what to do now.
-    private var footer: String {
-        if !hasAnyTasks { return "Add one small thing to start." }
-        if let next = overview.upNext.first {
-            var text = "Next: \(next.title)"
-            if let time = next.dueTime { text += " · \(Format.time(time))" }
-            if !overview.overdue.isEmpty { text += " · \(overview.overdue.count) carried over" }
-            return text
-        }
-        return overview.comingUp.isEmpty ? "Plan ahead or enjoy the calm." : "Next up: \(overview.comingUp[0].title)"
-    }
-}
-
 // MARK: - Small cards
 
 struct ClearDayCard: View {
-    let allDone: Bool
     let onAdd: () -> Void
 
     var body: some View {
         HStack(spacing: Space.md) {
-            PixelSprite(sprite: Sprite.cloudSmall, pixel: 3)
+            PixelSprite(sprite: Sprite.cloudSmall, pixel: 3,
+                        palette: PixelPalette.sky.with("W", SkyColor.lightSky).with("S", SkyColor.border))
             VStack(alignment: .leading, spacing: 3) {
-                Text(allDone ? "Everything planned is done" : "Nothing due today")
+                Text("Nothing due today")
                     .font(SkyFont.cardTitle)
-                    .foregroundStyle(SkyColor.onCanvas)
-                Text(allDone ? "Add something small or rest." : "Add something for today or plan ahead.")
+                    .foregroundStyle(SkyColor.ink)
+                Text("Add something for today or plan ahead.")
                     .font(SkyFont.meta)
-                    .foregroundStyle(SkyColor.onCanvasSecondary)
+                    .foregroundStyle(SkyColor.inkSecondary)
             }
             Spacer(minLength: 0)
-            InkCircleButton(systemImage: "plus", label: "Add a task for today", action: onAdd)
+            Button(action: onAdd) {
+                Image(systemName: "plus")
+                    .font(.system(.body, weight: .bold))
+                    .foregroundStyle(SkyColor.deepSky)
+                    .frame(width: 44, height: 44)
+                    .background(SkyColor.lightSky, in: Circle())
+            }
+            .accessibilityLabel("Add a task for today")
         }
         .padding(Space.md)
-        .background(SkyColor.raised, in: RoundedRectangle(cornerRadius: Radius.bigCard, style: .continuous))
+        .card(radius: Radius.row)
     }
 }
 
-/// A completed task on Today or Plan. The row opens the task; the checkbox reopens it
-/// (non-recurring only). Both are real buttons, so VoiceOver exposes each action.
+/// A completion from today (or a past day in Plan), drawn like a checked task row. The
+/// checkbox reopens non-recurring tasks; the row opens the task. Both are real buttons.
 struct DoneEventRow: View {
     let event: CompletionEvent
     let task: TaskItem?
-    let list: TaskList?
     let onReopen: (TaskItem) -> Void
     let onOpen: (TaskItem) -> Void
 
@@ -356,32 +265,26 @@ struct DoneEventRow: View {
     }
 
     var body: some View {
-        HStack(spacing: Space.xs) {
+        HStack(spacing: Space.xxs) {
             SkyCheckbox(isOn: true, isEnabled: reopenable != nil, title: event.taskTitle) {
                 if let t = reopenable { onReopen(t) }
             }
-            .padding(.leading, Space.xs)
+            .padding(.leading, Space.xxs)
 
             Button {
                 if let task { onOpen(task) }
             } label: {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(event.taskTitle)
-                        .font(SkyFont.rowTitle)
+                        .font(.system(.body, weight: .semibold))
                         .strikethrough(true, color: SkyColor.inkSecondary)
                         .foregroundStyle(SkyColor.inkSecondary)
                         .lineLimit(2)
-                    HStack(spacing: 6) {
-                        if let list {
-                            Circle().fill(SkyColor.list(list.color)).frame(width: 7, height: 7)
-                            Text(list.name)
-                        }
-                        Text("·")
-                        Text(event.completedAt.formatted(date: .omitted, time: .shortened))
-                        if task?.isRecurring == true { Image(systemName: "repeat").imageScale(.small) }
-                    }
-                    .font(SkyFont.meta)
-                    .foregroundStyle(SkyColor.inkSecondary)
+                    Text(task?.isRecurring == true
+                         ? "Done \(event.completedAt.formatted(date: .omitted, time: .shortened)) · repeats"
+                         : "Done \(event.completedAt.formatted(date: .omitted, time: .shortened))")
+                        .font(.system(.caption))
+                        .foregroundStyle(SkyColor.inkSecondary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.vertical, Space.sm)
@@ -393,6 +296,7 @@ struct DoneEventRow: View {
             .accessibilityHint(task == nil ? "This task was deleted" : "Opens the task")
         }
         .padding(.trailing, Space.md)
+        .frame(minHeight: 58)
         .card(radius: Radius.row)
     }
 }
@@ -406,7 +310,7 @@ struct SaveErrorBanner: View {
             .foregroundStyle(SkyColor.pinkText)
             .padding(Space.sm)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(SkyColor.pinkSoft, in: RoundedRectangle(cornerRadius: Radius.small, style: .continuous))
+            .background(SkyColor.softPink, in: RoundedRectangle(cornerRadius: Radius.small, style: .continuous))
     }
 }
 

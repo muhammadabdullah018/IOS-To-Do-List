@@ -95,6 +95,8 @@ public final class SkydayStore {
         return StreakEngine.statuses(from: start, through: end, events: data.events, settings: data.settings, today: today)
     }
 
+    public var weekCompletionRate: Double? { TaskQueries.weekCompletionRate(data, today: today) }
+
     public var achievements: [Achievement] {
         let summary = streak
         let perfect = StreakEngine.hasPerfectWeek(events: data.events, settings: data.settings, today: today)

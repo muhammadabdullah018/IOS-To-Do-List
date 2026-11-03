@@ -12,58 +12,7 @@ struct RootView: View {
 
     var body: some View {
         @Bindable var router = router
-        currentTab
-            // Exactly three tabs, drawn as a floating capsule. The inset makes every screen's
-            // scroll content clear the bar automatically.
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                FloatingTabBar(selection: $router.tab) {
-                    Haptics.tick()
-                    router.present(.newTask(TaskPrefill(dueDay: router.tab == .lists ? nil : store.today)))
-                }
-                .padding(.horizontal, Space.md)
-                .padding(.bottom, Space.xxs)
-                // The toast's bottom edge is pinned 8pt above the bar's top edge.
-                .overlay(alignment: .top) {
-                    undoOverlay.alignmentGuide(.top) { d in d[.bottom] + Space.xs }
-                }
-            }
-            .background(SkyColor.canvas.ignoresSafeArea())
-            .tint(SkyColor.deepSky)
-            // v2 design is a night canvas; system sheets, forms and pickers match it.
-            .preferredColorScheme(.dark)
-            .sheet(item: $router.sheet) { route in
-                sheetContent(route)
-            }
-            .alert("Data recovery", isPresented: Binding(get: { store.recoveryNotice != nil },
-                                                         set: { if !$0 { store.dismissRecoveryNotice() } })) {
-                Button("OK", role: .cancel) { store.dismissRecoveryNotice() }
-            } message: {
-                Text(store.recoveryNotice ?? "")
-            }
-            .onOpenURL { url in
-                if let link = DeepLink(url: url) { router.handle(link, store: store) }
-            }
-            .onChange(of: scenePhase) { _, phase in
-                if phase == .active {
-                    store.refreshForNewDay()
-                    Task { await notifications.refreshPermission() }
-                }
-            }
-            .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged).receive(on: RunLoop.main)) { _ in
-                store.refreshForNewDay()
-            }
-            .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification).receive(on: RunLoop.main)) { _ in
-                store.refreshForNewDay()
-            }
-    }
-
-    /// Only the selected tab is rendered; navigation paths live in the router, so each tab
-    /// keeps its place when you switch back.
-    @ViewBuilder
-    private var currentTab: some View {
-        @Bindable var router = router
-        switch router.tab {
-        case .today:
+        TabView(selection: $router.tab) {
             NavigationStack(path: $router.todayPath) {
                 TodayView()
                     .navigationDestination(for: TodayRoute.self) { route in
@@ -72,7 +21,9 @@ struct RootView: View {
                         }
                     }
             }
-        case .lists:
+            .tabItem { Label("Today", systemImage: "house") }
+            .tag(AppTab.today)
+
             NavigationStack(path: $router.listsPath) {
                 ListsView()
                     .navigationDestination(for: ListsRoute.self) { route in
@@ -81,10 +32,43 @@ struct RootView: View {
                         }
                     }
             }
-        case .progress:
+            .tabItem { Label("Lists", systemImage: "square.stack.3d.up") }
+            .tag(AppTab.lists)
+
             NavigationStack {
                 ProgressScreen()
             }
+            .tabItem { Label("Progress", systemImage: "chart.bar") }
+            .tag(AppTab.progress)
+        }
+        .tint(SkyColor.sky)
+        // The reference design is a bright daytime sky; night is expressed by the Today
+        // header art after 20:00, not by system dark mode.
+        .preferredColorScheme(.light)
+        .sheet(item: $router.sheet) { route in
+            sheetContent(route)
+        }
+        .overlay(alignment: .bottom) { undoOverlay }
+        .alert("Data recovery", isPresented: Binding(get: { store.recoveryNotice != nil },
+                                                     set: { if !$0 { store.dismissRecoveryNotice() } })) {
+            Button("OK", role: .cancel) { store.dismissRecoveryNotice() }
+        } message: {
+            Text(store.recoveryNotice ?? "")
+        }
+        .onOpenURL { url in
+            if let link = DeepLink(url: url) { router.handle(link, store: store) }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                store.refreshForNewDay()
+                Task { await notifications.refreshPermission() }
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged).receive(on: RunLoop.main)) { _ in
+            store.refreshForNewDay()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification).receive(on: RunLoop.main)) { _ in
+            store.refreshForNewDay()
         }
     }
 
@@ -111,6 +95,7 @@ struct RootView: View {
                     Haptics.soft()
                     store.undo()
                 }
+                .padding(.bottom, 58) // above the tab bar (overlay sits in the safe area)
                 .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
                 .id(token.id)
                 .task(id: token.id) {

@@ -532,8 +532,8 @@ struct CustomRepeatEditor: View {
                         Text(String(RecurrenceRule.shortWeekdayNames[weekday - 1].prefix(2)))
                             .font(.system(.caption, weight: .bold))
                             .frame(maxWidth: .infinity, minHeight: 44)
-                            .foregroundStyle(isOn ? SkyColor.cardInk : SkyColor.deepSky)
-                            .background(isOn ? SkyColor.sky : SkyColor.surfaceSunken,
+                            .foregroundStyle(isOn ? Color.white : SkyColor.deepSky)
+                            .background(isOn ? SkyColor.deepSky : SkyColor.surfaceSunken,
                                         in: RoundedRectangle(cornerRadius: Radius.small, style: .continuous))
                     }
                     .buttonStyle(.plain)

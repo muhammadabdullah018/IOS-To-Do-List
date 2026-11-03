@@ -86,6 +86,7 @@ describe('import validation', () => {
     })
     expect(d.dailyGoal).toBe(20)
     expect(d.lists[0].color).toBe('#0593C6')
+    expect(d.lists[0].icon).toBe('book')
     expect(d.tasks[0].title).toHaveLength(200)
     expect(d.tasks[0].listId).toBe('l')
     expect(d.tasks[0].priority).toBe(0)

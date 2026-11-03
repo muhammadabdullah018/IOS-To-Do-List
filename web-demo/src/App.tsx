@@ -4,6 +4,7 @@ import {
   parseData, parseDay, Priority, reopenTask, Repeat, streak, Task, TaskList, todayTasks, uid, weekDays,
 } from './domain'
 import { SkyScene, Sprite, SPRITES } from './Pixel'
+import { Icon, LIST_ICONS, MorphIcon, useMorphIntro } from './Icons'
 
 const STORAGE_KEY = 'skyday-demo-v1'
 
@@ -36,6 +37,7 @@ export default function App() {
   const [undo, setUndo] = useState<{ msg: string; prev: AppData } | null>(null)
   const [saveError, setSaveError] = useState(false)
   const [now, setNow] = useState(() => new Date())
+  const [splash, setSplash] = useState(true)
   const today = dayKey(now)
 
   useEffect(() => {
@@ -69,14 +71,8 @@ export default function App() {
       <div className="demo-badge" role="note">DEMO · browser preview, data stays in this browser</div>
       {saveError && <div className="banner" role="alert">Couldn’t save in this browser. Changes may be lost on reload.</div>}
       <main className="screen" key={screen.kind + tab}>{body}</main>
-      <nav className="tabbar" aria-label="Main">
-        {(['today', 'lists', 'progress'] as Tab[]).map(t => (
-          <button key={t} className={tab === t ? 'tab active' : 'tab'} aria-current={tab === t ? 'page' : undefined} onClick={() => openTab(t)}>
-            <span className="tab-icon" aria-hidden="true">{t === 'today' ? '⌂' : t === 'lists' ? '≡' : '▥'}</span>
-            {t === 'today' ? 'Today' : t === 'lists' ? 'Lists' : 'Progress'}
-          </button>
-        ))}
-      </nav>
+      <TabBar tab={tab} onSelect={openTab} />
+      {splash && <Splash onDone={() => setSplash(false)} />}
       {undo && (
         <div className="toast" role="status">
           <span>{undo.msg}</span>
@@ -114,7 +110,7 @@ function fmtTime(t?: string) {
   return new Date(2000, 0, 1, h, m).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
 }
 
-function TaskRow({ t, ctx, showDay }: { t: Task; ctx: Ctx; showDay?: boolean }) {
+function TaskRow({ t, ctx, showDay, i = 0 }: { t: Task; ctx: Ctx; showDay?: boolean; i?: number }) {
   const list = ctx.data.lists.find(l => l.id === t.listId)
   const overdue = isOverdue(t, ctx.today)
   const sub = t.subtasks.length ? `${t.subtasks.filter(s => s.done).length}/${t.subtasks.length}` : ''
@@ -123,24 +119,24 @@ function TaskRow({ t, ctx, showDay }: { t: Task; ctx: Ctx; showDay?: boolean }) 
     fmtTime(t.dueTime), t.repeat ? '↻ repeats' : '', sub, list?.name,
   ].filter(Boolean).join(' · ')
   return (
-    <div className={`row card${t.completed ? ' done' : ''}`}>
+    <div className={`row card stagger${t.completed ? ' done' : ''}`} style={{ ['--i' as string]: Math.min(i, 8) }}>
       <button className={`check${t.completed ? ' on' : ''}`} aria-label={`${t.completed ? 'Reopen' : 'Complete'} ${t.title}`}
-        aria-pressed={t.completed} onClick={() => ctx.toggle(t)}>{t.completed ? '✓' : ''}</button>
+        aria-pressed={t.completed} onClick={() => ctx.toggle(t)}>{t.completed && <CheckMark />}</button>
       <button className="row-body" onClick={() => ctx.setSheet({ kind: 'task', id: t.id })}>
         <span className="row-title">{t.title}</span>
         {meta && <span className={overdue || (t.dueDay === ctx.today && !t.completed) ? 'row-meta urgent' : 'row-meta'}>{meta}</span>}
       </button>
-      {t.priority === 3 && !t.completed && <span className="flag" aria-label="High priority">⚑</span>}
+      {t.priority === 3 && !t.completed && <span className="flag" role="img" aria-label="High priority"><Icon name="flag" size={18} /></span>}
     </div>
   )
 }
 
-function Header({ title, children, variant }: { title: string; children?: React.ReactNode; variant?: 'day' | 'sunset' | 'night' }) {
+function Header({ title, children, variant, icon }: { title: string; children?: React.ReactNode; variant?: 'day' | 'sunset' | 'night'; icon?: React.ReactNode }) {
   return (
     <header className="hero">
       <SkyScene variant={variant} />
       <div className="hero-content">
-        <h1>{title}</h1>
+        <h1>{title}{icon}</h1>
         {children}
       </div>
     </header>
@@ -148,7 +144,7 @@ function Header({ title, children, variant }: { title: string; children?: React.
 }
 
 function Back({ ctx, label = 'Back' }: { ctx: Ctx; label?: string }) {
-  return <button className="back" onClick={() => ctx.setScreen({ kind: 'tab' })}>‹ {label}</button>
+  return <button className="back" onClick={() => ctx.setScreen({ kind: 'tab' })}><Icon name="back" size={20} />{label}</button>
 }
 
 function ProgressRing({ done, total }: { done: number; total: number }) {
@@ -181,11 +177,11 @@ function Today(ctx: Ctx) {
 
   return (
     <>
-      <Header title={`${greet}${data.name ? `, ${data.name}` : ''}`} variant={variant}>
+      <Header title={`${greet}${data.name ? `, ${data.name}` : ''}`} variant={variant} icon={<HeaderMorph night={variant === 'night'} />}>
         <p className="overline">{now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}</p>
         <div className="hero-actions">
           <button className="chip-streak" onClick={() => ctx.openTab('progress')}>🔥 {s.current} Day Streak</button>
-          <button className="circle" aria-label="Calendar" onClick={() => ctx.setScreen({ kind: 'calendar' })}>▦</button>
+          <button className="circle" aria-label="Calendar" onClick={() => ctx.setScreen({ kind: 'calendar' })}><Icon name="calendar" /></button>
         </div>
       </Header>
       <div className={empty ? 'content flat' : 'content'}>
@@ -196,12 +192,12 @@ function Today(ctx: Ctx) {
               <strong>{doneCount} of {doneCount + open.length} Tasks</strong>
               <small>{open.length === 0 && doneCount > 0 ? 'All clear for today' : 'completed today'}</small>
             </span>
-            <span className="chev" aria-hidden="true">›</span>
+            <Icon name="chevron" size={18} className="chev" />
           </button>
         )}
         <div className="section-head">
           <h2>Today</h2>
-          <button className="add" aria-label="New task for today" onClick={() => ctx.setSheet({ kind: 'task', dueDay: today })}>+</button>
+          <button className="add" aria-label="New task for today" onClick={() => ctx.setSheet({ kind: 'task', dueDay: today })}><Icon name="plus" size={20} /></button>
         </div>
         {empty ? (
           <div className="card empty">
@@ -213,8 +209,8 @@ function Today(ctx: Ctx) {
         ) : open.length === 0 && doneToday.length === 0 ? (
           <div className="card clear"><Sprite rows={SPRITES.CLOUD_SMALL} px={3} /><span><strong>Nothing due today</strong><small>Add something or plan ahead.</small></span></div>
         ) : null}
-        {open.map(t => <TaskRow key={t.id} t={t} ctx={ctx} />)}
-        {doneToday.map(t => <TaskRow key={t.id} t={t} ctx={ctx} />)}
+        {open.map((t, i) => <TaskRow key={t.id} t={t} ctx={ctx} i={i} />)}
+        {doneToday.map((t, i) => <TaskRow key={t.id} t={t} ctx={ctx} i={open.length + i} />)}
         {upcoming.length > 0 && <><h2 className="sub">Coming up</h2>{upcoming.map(t => <TaskRow key={t.id} t={t} ctx={ctx} showDay />)}</>}
         {unscheduled.length > 0 && <><h2 className="sub">Someday</h2>{unscheduled.map(t => <TaskRow key={t.id} t={t} ctx={ctx} />)}</>}
       </div>
@@ -229,16 +225,16 @@ function Lists(ctx: Ctx) {
   return (
     <>
       <Header title="Lists">
-        <div className="hero-actions end"><button className="circle" aria-label="New list" onClick={() => ctx.setSheet({ kind: 'list' })}>+</button></div>
+        <div className="hero-actions end"><button className="circle" aria-label="New list" onClick={() => ctx.setSheet({ kind: 'list' })}><Icon name="plus" /></button></div>
       </Header>
       <div className="content">
         {data.lists.map(l => {
           const n = data.tasks.filter(t => t.listId === l.id && !t.completed).length
           return (
             <button key={l.id} className="card list-card" style={{ ['--tint' as string]: l.color }} onClick={() => ctx.setScreen({ kind: 'list', id: l.id })}>
-              <span className="list-icon" aria-hidden="true">{l.icon}</span>
+              <span className="list-icon" aria-hidden="true"><Icon name={l.icon} /></span>
               <span><strong>{l.name}</strong><small>{n} {n === 1 ? 'task' : 'tasks'}</small></span>
-              <span className="chev" aria-hidden="true">›</span>
+              <Icon name="chevron" size={18} className="chev" />
             </button>
           )
         })}
@@ -261,8 +257,8 @@ function ListDetail(ctx: Ctx & { id: string }) {
         <button className="link" onClick={() => ctx.setSheet({ kind: 'list', id: list.id })}>Edit</button>
       </div>
       <div className="section-head">
-        <h1 className="page-title">{list.icon} {list.name}</h1>
-        <button className="add" aria-label={`New task in ${list.name}`} onClick={() => ctx.setSheet({ kind: 'task', listId: list.id })}>+</button>
+        <h1 className="page-title">{list.name}</h1>
+        <button className="add" aria-label={`New task in ${list.name}`} onClick={() => ctx.setSheet({ kind: 'task', listId: list.id })}><Icon name="plus" size={20} /></button>
       </div>
       {open.length === 0 && <p className="muted">No open tasks in this list.</p>}
       {open.map(t => <TaskRow key={t.id} t={t} ctx={ctx} showDay />)}
@@ -275,7 +271,7 @@ function ListDetail(ctx: Ctx & { id: string }) {
 function ListSheet(ctx: Ctx & { id?: string; close: () => void }) {
   const existing = ctx.data.lists.find(l => l.id === ctx.id)
   const [name, setName] = useState(existing?.name ?? '')
-  const [icon, setIcon] = useState(existing?.icon ?? '📚')
+  const [icon, setIcon] = useState(existing?.icon ?? 'book')
   const [color, setColor] = useState(existing?.color ?? '#0593C6')
   const [confirm, setConfirm] = useState(false)
   const valid = name.trim().length > 0
@@ -299,7 +295,7 @@ function ListSheet(ctx: Ctx & { id?: string; close: () => void }) {
     <Modal title={existing ? 'Edit List' : 'New List'} close={ctx.close} onSave={save} canSave={valid}>
       <label className="field"><span>Name</span><input autoFocus maxLength={LIMITS.listName} value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Thesis" /></label>
       <fieldset className="field"><legend>Icon</legend><div className="chips">
-        {['📚', '🎓', '💻', '❤', '🏋', '📖', '🛒', '✈', '🎵', '⭐'].map(i => <button key={i} className={i === icon ? 'chip on' : 'chip'} aria-pressed={i === icon} onClick={() => setIcon(i)}>{i}</button>)}
+        {LIST_ICONS.map(i => <button key={i} className={i === icon ? 'chip on' : 'chip'} aria-label={i} aria-pressed={i === icon} onClick={() => setIcon(i)}><Icon name={i} /></button>)}
       </div></fieldset>
       <fieldset className="field"><legend>Color</legend><div className="chips">
         {['#0593C6', '#D83995', '#4F7FAE', '#3AA9C9', '#2A9D8F', '#D9962B'].map(c => <button key={c} className={c === color ? 'swatch on' : 'swatch'} style={{ background: c }} aria-label={`Color ${c}`} aria-pressed={c === color} onClick={() => setColor(c)} />)}
@@ -380,7 +376,7 @@ function TaskSheet(ctx: Ctx & { sheet: { id?: string; dueDay?: string; listId?: 
         {t.subtasks.map(s => (
           <div key={s.id} className="subtask">
             <button className={`check small${s.done ? ' on' : ''}`} aria-label={`${s.done ? 'Uncheck' : 'Check'} ${s.title}`} aria-pressed={s.done}
-              onClick={() => set({ subtasks: t.subtasks.map(x => (x.id === s.id ? { ...x, done: !x.done } : x)) })}>{s.done ? '✓' : ''}</button>
+              onClick={() => set({ subtasks: t.subtasks.map(x => (x.id === s.id ? { ...x, done: !x.done } : x)) })}>{s.done && <CheckMark />}</button>
             <span className={s.done ? 'struck' : ''}>{s.title}</span>
             <button className="icon-btn" aria-label={`Remove ${s.title}`} onClick={() => set({ subtasks: t.subtasks.filter(x => x.id !== s.id) })}>×</button>
           </div>
@@ -438,9 +434,9 @@ function Calendar(ctx: Ctx) {
       <h1 className="page-title">Calendar</h1>
       <div className="card cal">
         <div className="cal-head">
-          <button className="icon-btn" aria-label="Previous month" onClick={() => shift(-1)}>‹</button>
+          <button className="icon-btn" aria-label="Previous month" onClick={() => shift(-1)}><Icon name="back" size={22} /></button>
           <strong>{month.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</strong>
-          <button className="icon-btn" aria-label="Next month" onClick={() => shift(1)}>›</button>
+          <button className="icon-btn" aria-label="Next month" onClick={() => shift(1)}><Icon name="chevron" size={22} /></button>
         </div>
         <div className="cal-grid" role="grid">
           {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => <span key={d} className="dow">{d}</span>)}
@@ -460,7 +456,7 @@ function Calendar(ctx: Ctx) {
       </div>
       <div className="section-head">
         <h2>{parseDay(selected).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</h2>
-        <button className="add" aria-label="New task on this day" onClick={() => ctx.setSheet({ kind: 'task', dueDay: selected })}>+</button>
+        <button className="add" aria-label="New task on this day" onClick={() => ctx.setSheet({ kind: 'task', dueDay: selected })}><Icon name="plus" size={20} /></button>
       </div>
       {dayTasks.length === 0 && doneOn.length === 0 && <p className="muted">Nothing planned for this day.</p>}
       {dayTasks.map(t => <TaskRow key={t.id} t={t} ctx={ctx} />)}
@@ -483,7 +479,7 @@ function ProgressTab(ctx: Ctx) {
   return (
     <>
       <Header title="Progress">
-        <div className="hero-actions end"><button className="circle" aria-label="Settings" onClick={() => ctx.setScreen({ kind: 'settings' })}>⚙</button></div>
+        <div className="hero-actions end"><button className="circle" aria-label="Settings" onClick={() => ctx.setScreen({ kind: 'settings' })}><Icon name="gear" /></button></div>
         <button className="streak-bubble" onClick={() => ctx.setScreen({ kind: 'streaks' })} aria-label={`${s.current} day streak. Open streaks and achievements`}>
           <Sprite rows={SPRITES.FLAME} px={4} /><span className="big">{s.current}</span><span>Day Streak</span>
         </button>
@@ -513,9 +509,9 @@ function ProgressTab(ctx: Ctx) {
           </div>
         </div>
         <button className="card list-card" onClick={() => ctx.setScreen({ kind: 'streaks' })}>
-          <span className="list-icon" aria-hidden="true">🏆</span>
+          <span className="list-icon" aria-hidden="true"><Icon name="trophy" /></span>
           <span><strong>Streak & Achievements</strong><small>{unlocked} of {achievements(s).length} unlocked</small></span>
-          <span className="chev" aria-hidden="true">›</span>
+          <Icon name="chevron" size={18} className="chev" />
         </button>
       </div>
     </>
@@ -546,7 +542,7 @@ function Streaks(ctx: Ctx) {
       <h2>Achievements {list.filter(a => a.current >= a.target).length}/{list.length}</h2>
       {list.map(a => (
         <div key={a.id} className={`card ach${a.current >= a.target ? ' on' : ''}`}>
-          <span className="ach-badge" aria-hidden="true">{a.current >= a.target ? '★' : '☆'}</span>
+          <span className="ach-badge" aria-hidden="true"><Icon name="star" /></span>
           <span><strong>{a.title}</strong><small>{a.detail}</small></span>
           <span className="ach-count">{a.current >= a.target ? '✓' : `${a.current}/${a.target}`}</span>
         </div>
@@ -609,4 +605,69 @@ function Settings(ctx: Ctx) {
       <p className="muted">Skyday web demo 1.0. Native app: SwiftUI, iOS 17+. No accounts, ads or tracking.</p>
     </div>
   )
+}
+
+// ---------- Motion pieces (after the reference animations) ----------
+
+const TABS: { id: Tab; label: string; icon: string }[] = [
+  { id: 'today', label: 'Today', icon: 'house' },
+  { id: 'lists', label: 'Lists', icon: 'stack' },
+  { id: 'progress', label: 'Progress', icon: 'chart' },
+]
+
+/** Floating pill tab bar: sliding highlight, active icon pops, tap ripple. */
+function TabBar({ tab, onSelect }: { tab: Tab; onSelect: (t: Tab) => void }) {
+  const [ripple, setRipple] = useState<{ key: number; x: number; y: number } | null>(null)
+  const index = TABS.findIndex(t => t.id === tab)
+  return (
+    <nav className="tabbar" aria-label="Main">
+      <span className="tab-highlight" style={{ transform: `translateX(${index * 100}%)` }} aria-hidden="true" />
+      {TABS.map(t => (
+        <button key={t.id} className={tab === t.id ? 'tab active' : 'tab'} aria-current={tab === t.id ? 'page' : undefined}
+          onClick={e => {
+            const r = e.currentTarget.getBoundingClientRect()
+            setRipple({ key: Date.now(), x: e.clientX ? e.clientX - r.left : r.width / 2, y: e.clientY ? e.clientY - r.top : r.height / 2 })
+            onSelect(t.id)
+          }}>
+          {ripple && tab === t.id && <span key={ripple.key} className="ripple" style={{ left: ripple.x, top: ripple.y }} aria-hidden="true" />}
+          <Icon name={t.icon} size={24} className="tab-icon" />
+          <span className="tab-label">{t.label}</span>
+        </button>
+      ))}
+    </nav>
+  )
+}
+
+/** Launch moment: globe, then moon, then sun over the pixel cloud; fades after about 1.3 s. */
+function Splash({ onDone }: { onDone: () => void }) {
+  const shape = useMorphIntro('sun')
+  const [leaving, setLeaving] = useState(false)
+  useEffect(() => {
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
+    const t1 = setTimeout(() => setLeaving(true), reduce ? 0 : 1200)
+    const t2 = setTimeout(onDone, reduce ? 0 : 1550)
+    return () => { clearTimeout(t1); clearTimeout(t2) }
+  }, [onDone])
+  return (
+    <div className={`splash${leaving ? ' leaving' : ''}`} aria-hidden="true">
+      <div className="splash-mark">
+        <Sprite rows={SPRITES.CLOUD} px={6} />
+        <span className="splash-sun"><MorphIcon shape={shape} size={64} color="#D83995" /></span>
+      </div>
+      <strong>Skyday</strong>
+    </div>
+  )
+}
+
+function CheckMark() {
+  return (
+    <svg className="checkmark" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+      <path d="M5 12.5 10 17.5 19 7" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function HeaderMorph({ night }: { night: boolean }) {
+  const shape = useMorphIntro(night ? 'moon' : 'sun')
+  return <span className="header-morph"><MorphIcon shape={shape} size={30} color="#F5B932" /></span>
 }

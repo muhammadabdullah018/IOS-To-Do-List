@@ -37,6 +37,8 @@ export interface AppData {
   completions: Completion[]
 }
 
+export const LIST_ICON_NAMES = ['book', 'cap', 'laptop', 'heart', 'dumbbell', 'cart', 'plane', 'music', 'star', 'briefcase']
+
 export const LIMITS = { title: 200, notes: 2000, listName: 40, subtasks: 50, goalMin: 1, goalMax: 20 }
 
 export const uid = () =>
@@ -187,9 +189,9 @@ export function emptyData(): AppData {
   return {
     version: 1, name: '', dailyGoal: 3, tasks: [], completions: [],
     lists: [
-      { id: 'inbox', name: 'Personal', icon: '❤', color: '#D83995' },
-      { id: uid(), name: 'University', icon: '🎓', color: '#0593C6' },
-      { id: uid(), name: 'Work', icon: '💻', color: '#4F7FAE' },
+      { id: 'inbox', name: 'Personal', icon: 'heart', color: '#D83995' },
+      { id: uid(), name: 'University', icon: 'cap', color: '#0593C6' },
+      { id: uid(), name: 'Work', icon: 'laptop', color: '#4F7FAE' },
     ],
   }
 }
@@ -204,7 +206,7 @@ export function parseData(raw: unknown): AppData {
     throw new Error('Not a Skyday backup')
   }
   const lists: TaskList[] = r.lists.slice(0, 100).map((l: any) => ({
-    id: str(l?.id, 64) || uid(), name: str(l?.name, LIMITS.listName) || 'List', icon: str(l?.icon, 8) || '📋',
+    id: str(l?.id, 64) || uid(), name: str(l?.name, LIMITS.listName) || 'List', icon: LIST_ICON_NAMES.includes(l?.icon) ? l.icon : 'book',
     color: /^#[0-9A-Fa-f]{6}$/.test(l?.color) ? l.color : '#0593C6',
   }))
   if (lists.length === 0) throw new Error('Backup has no lists')

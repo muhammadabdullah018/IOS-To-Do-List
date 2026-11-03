@@ -2,7 +2,7 @@
 
 > **No Mac?** Use `docs/INSTALL_WITHOUT_MAC.md`: GitHub builds an unsigned `.ipa` and Sideloadly on Windows signs it with a free Apple ID.
 
-Skyday is a native SwiftUI app. Installing it on an iPhone needs a Mac with Xcode; Apple does not allow a normal iPhone to install an unsigned app, and Windows cannot sign iOS apps.
+Skyday is a native SwiftUI app. Building and signing it in Xcode needs a Mac; without one, use the Windows route above. Apple does not let a normal iPhone install an unsigned app.
 
 ## What exists today
 | Artifact | Where | Installable on a normal iPhone? |

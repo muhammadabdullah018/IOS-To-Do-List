@@ -37,7 +37,7 @@ Requirements: macOS with **Xcode 16 or newer** (iOS 17+ deployment target).
      -destination 'platform=iOS Simulator,name=iPhone 16' test
    ```
 
-Full step-by-step device install (free Apple ID or paid account): [`docs/RUN_ON_IPHONE.md`](docs/RUN_ON_IPHONE.md).
+Full step-by-step device install (free Apple ID or paid account): [`docs/RUN_ON_IPHONE.md`](docs/RUN_ON_IPHONE.md). **Windows, no Mac:** [`docs/INSTALL_WITHOUT_MAC.md`](docs/INSTALL_WITHOUT_MAC.md).
 
 ## Web demo (any OS)
 ```bash

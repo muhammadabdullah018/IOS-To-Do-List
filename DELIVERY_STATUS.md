@@ -6,7 +6,7 @@ Environment: Windows 11 Pro (no Xcode, no Swift locally). iOS builds and tests r
 
 ## Executive result
 - Native iOS build: **DONE** — Xcode `BUILD SUCCEEDED` for app + widget (simulator, unsigned): run 41683623460 (Xcode 16.4, arm64) and run 41694283629 (Intel, includes month calendar, haptics, launch and motion code).
-- iPhone-installable build: **BLOCKED** — needs a Mac (or macOS CI with secrets) plus your Apple ID/team to sign. Exact steps: `docs/RUN_ON_IPHONE.md`. No signed `.ipa` exists.
+- iPhone-installable build: **PARTIAL** — workflow `ios-device-ipa.yml` builds an unsigned arm64 `Skyday-unsigned.ipa` on GitHub macOS; you sign and install it from Windows with Sideloadly and a free Apple ID (`docs/INSTALL_WITHOUT_MAC.md`, 7-day expiry, widget removed). No signed `.ipa` is stored anywhere; not yet installed on a device.
 - Simulator build/run: **DONE** — 8 UI tests launch and drive the app on an iOS simulator; 9 real screenshots in `docs/screenshots/ios-simulator/`. Unsigned `Skyday-simulator.app.zip` is in the CI artifact `ios-results` (simulator only).
 - Playable browser demo: **DONE** — https://spideyab.github.io/IOS-To-Do-List/ (verified live; redeployed automatically on each push). Local: `cd web-demo && npm install && npm run dev`.
 - Upstream PR: https://github.com/muhammadabdullah018/IOS-To-Do-List/pull/2 (from `SpideyAB:skyday-delivery`).

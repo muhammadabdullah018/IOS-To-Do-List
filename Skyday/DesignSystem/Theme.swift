@@ -176,14 +176,46 @@ enum Motion {
     static func ifAllowed(_ animation: Animation, reduceMotion: Bool) -> Animation? {
         reduceMotion ? nil : animation
     }
+
+    /// UI tests turn decorative motion off so taps never land on a half-faded element.
+    static let isUITesting = ProcessInfo.processInfo.arguments.contains("-uiTesting")
+}
+
+/// Cards rise into place one after another the first time a list appears.
+/// Reduce Motion (and UI tests) show them immediately.
+struct StaggeredAppear: ViewModifier {
+    let index: Int
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var shown = Motion.isUITesting
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(shown ? 1 : 0)
+            .offset(y: shown ? 0 : 14)
+            .scaleEffect(shown ? 1 : 0.98, anchor: .top)
+            .onAppear {
+                guard !shown else { return }
+                if reduceMotion { shown = true; return }
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.82).delay(Double(min(index, 8)) * 0.045)) {
+                    shown = true
+                }
+            }
+    }
+}
+
+extension View {
+    func staggeredAppear(_ index: Int) -> some View { modifier(StaggeredAppear(index: index)) }
 }
 
 // MARK: - Haptics
 
 enum Haptics {
-    static func tick() { UIImpactFeedbackGenerator(style: .light).impactOccurred() }
-    static func soft() { UIImpactFeedbackGenerator(style: .soft).impactOccurred(intensity: 0.7) }
-    static func success() { UINotificationFeedbackGenerator().notificationOccurred(.success) }
-    static func warning() { UINotificationFeedbackGenerator().notificationOccurred(.warning) }
-    static func selection() { UISelectionFeedbackGenerator().selectionChanged() }
+    /// Mirrors `AppSettings.haptics`; set by AppEnvironment on launch and every commit.
+    @MainActor static var isEnabled = true
+
+    @MainActor static func tick() { if isEnabled { UIImpactFeedbackGenerator(style: .light).impactOccurred() } }
+    @MainActor static func soft() { if isEnabled { UIImpactFeedbackGenerator(style: .soft).impactOccurred(intensity: 0.7) } }
+    @MainActor static func success() { if isEnabled { UINotificationFeedbackGenerator().notificationOccurred(.success) } }
+    @MainActor static func warning() { if isEnabled { UINotificationFeedbackGenerator().notificationOccurred(.warning) } }
+    @MainActor static func selection() { if isEnabled { UISelectionFeedbackGenerator().selectionChanged() } }
 }

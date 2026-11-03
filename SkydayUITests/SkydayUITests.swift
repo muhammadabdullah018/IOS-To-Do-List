@@ -140,6 +140,24 @@ final class SkydayUITests: XCTestCase {
         snap(app, "09_settings")
     }
 
+    /// Accessibility evidence: Today and Calendar at a large accessibility text size.
+    func testLargeTextScreenshots() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-uiTesting", "-resetData",
+                               "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityL"]
+        app.launch()
+        app.buttons["addTaskButton"].firstMatch.tap()
+        let field = app.textFields["taskTitleField"]
+        XCTAssertTrue(field.waitForExistence(timeout: 3))
+        field.tap()
+        field.typeText("Submit thesis chapter draft")
+        app.buttons["saveTaskButton"].tap()
+        XCTAssertTrue(app.buttons["Complete Submit thesis chapter draft"].waitForExistence(timeout: 3))
+        snap(app, "11_today_large_text")
+        app.tabBars.buttons["Progress"].tap()
+        snap(app, "12_progress_large_text")
+    }
+
     private func snap(_ app: XCUIApplication, _ name: String) {
         Thread.sleep(forTimeInterval: 1) // let tab and push transitions settle
         let shot = XCTAttachment(screenshot: app.screenshot())

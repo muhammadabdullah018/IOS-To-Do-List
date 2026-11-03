@@ -2,40 +2,40 @@ import SwiftUI
 import SkydayKit
 
 /// Calendar sub-screen reached from the Today header and "See all" (not a tab).
-/// A week strip with busy-day dots, then the selected day's agenda.
+/// A month grid with busy-day markers, then the selected day's agenda.
 struct PlanView: View {
     @Environment(SkydayStore.self) private var store
     @Environment(AppRouter.self) private var router
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var selected: DayKey
-    @State private var weekStart: DayKey
+    @State private var month: DayKey
 
     init(initialDay: DayKey) {
         _selected = State(initialValue: initialDay)
-        _weekStart = State(initialValue: initialDay)
+        _month = State(initialValue: initialDay)
     }
 
     var body: some View {
         let today = store.today
         let firstWeekday = store.settings.firstWeekday
-        let start = weekStart.startOfWeek(firstWeekday: firstWeekday)
-        let days = (0..<7).map { start.adding(days: $0) }
-        let busy = store.busyDays(from: start, through: start.adding(days: 6))
+        let cells = MonthGrid.cells(month: month, firstWeekday: firstWeekday)
+        let busy = store.busyDays(from: cells[0], through: cells[41])
 
         ScrollView {
             VStack(alignment: .leading, spacing: Space.lg) {
-                WeekStrip(days: days, selected: selected, today: today, busy: busy, calendar: store.calendar,
+                MonthGrid(month: month, selected: selected, today: today, busy: busy,
+                          firstWeekday: firstWeekday, calendar: store.calendar,
                           onSelect: { day in
                               Haptics.selection()
-                              selected = day
-                          },
-                          onShift: { weeks in
-                              // Keep the same weekday selected when paging weeks.
                               withAnimation(reduceMotion ? nil : Motion.settle) {
-                                  weekStart = start.adding(days: 7 * weeks)
-                                  selected = selected.adding(days: 7 * weeks)
+                                  selected = day
+                                  if day.month != month.month { month = day }
                               }
+                          },
+                          onShift: { delta in
+                              Haptics.selection()
+                              withAnimation(reduceMotion ? nil : Motion.settle) { month = month.addingMonths(delta) }
                           })
 
                 DayAgenda(day: selected)
@@ -44,7 +44,7 @@ struct PlanView: View {
             .padding(.vertical, Space.md)
         }
         .background(SkyColor.page.ignoresSafeArea())
-        .navigationTitle(Format.longDate(selected, calendar: store.calendar))
+        .navigationTitle("Calendar")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -58,7 +58,7 @@ struct PlanView: View {
             if selected != today {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Today") {
-                        weekStart = today
+                        month = today
                         selected = today
                     }
                 }
@@ -67,76 +67,86 @@ struct PlanView: View {
     }
 }
 
-struct WeekStrip: View {
-    let days: [DayKey]
+/// Month calendar: weekday header in the user's week order, 6 rows, busy-day markers,
+/// selected day in pink, today in bold blue. Days outside the month are dimmed but tappable.
+struct MonthGrid: View {
+    let month: DayKey          // any day in the displayed month
     let selected: DayKey
     let today: DayKey
     let busy: Set<DayKey>
+    let firstWeekday: Int
     let calendar: Calendar
     let onSelect: (DayKey) -> Void
-    /// -1 previous week, +1 next week.
+    /// -1 previous month, +1 next month.
     let onShift: (Int) -> Void
 
+    static func cells(month: DayKey, firstWeekday: Int) -> [DayKey] {
+        let first = DayKey(year: month.year, month: month.month, day: 1)
+        let start = first.startOfWeek(firstWeekday: firstWeekday)
+        return (0..<42).map { start.adding(days: $0) }
+    }
+
     var body: some View {
-        VStack(spacing: Space.sm) {
+        let cells = Self.cells(month: month, firstWeekday: firstWeekday)
+        let columns = Array(repeating: GridItem(.flexible(), spacing: 2), count: 7)
+        VStack(spacing: Space.xs) {
             HStack {
                 Button { onShift(-1) } label: {
                     Image(systemName: "chevron.left").frame(width: 44, height: 44)
                 }
-                .accessibilityLabel("Previous week")
+                .accessibilityLabel("Previous month")
                 Spacer()
-                Text(monthTitle)
+                Text(DayKey(year: month.year, month: month.month, day: 1).noonDate(in: calendar)
+                        .formatted(.dateTime.month(.wide).year()))
                     .font(SkyFont.cardTitle)
                     .foregroundStyle(SkyColor.ink)
+                    .contentTransition(.numericText())
                 Spacer()
                 Button { onShift(1) } label: {
                     Image(systemName: "chevron.right").frame(width: 44, height: 44)
                 }
-                .accessibilityLabel("Next week")
+                .accessibilityLabel("Next month")
             }
+            .font(.system(.body, weight: .semibold))
             .foregroundStyle(SkyColor.deepSky)
 
-            HStack(spacing: 6) {
-                ForEach(days, id: \.self) { day in
-                    let isSelected = day == selected
-                    Button { onSelect(day) } label: {
-                        VStack(spacing: 6) {
-                            Text(Format.weekdayLetter(day, calendar: calendar))
-                                .font(SkyFont.caption)
-                                .foregroundStyle(isSelected ? Color.white.opacity(0.9) : SkyColor.inkSecondary)
-                            Text("\(day.day)")
-                                .font(.system(.headline, design: .rounded, weight: .bold))
-                                .foregroundStyle(isSelected ? Color.white : (day == today ? SkyColor.deepSky : SkyColor.ink))
-                            Rectangle()
-                                .fill(busy.contains(day) ? (isSelected ? Color.white : SkyColor.sky) : Color.clear)
-                                .frame(width: 5, height: 5)
-                        }
-                        .frame(maxWidth: .infinity, minHeight: 72)
-                        .background(isSelected ? SkyColor.deepSky : SkyColor.surface,
-                                    in: RoundedRectangle(cornerRadius: Radius.tile, style: .continuous))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: Radius.tile, style: .continuous)
-                                .strokeBorder(day == today && !isSelected ? SkyColor.sky : SkyColor.border, lineWidth: day == today ? 1.5 : 1)
-                        )
-                    }
-                    .buttonStyle(PressableButtonStyle())
-                    .accessibilityLabel(accessibilityLabel(day))
-                    .accessibilityAddTraits(isSelected ? .isSelected : [])
+            LazyVGrid(columns: columns, spacing: 2) {
+                ForEach(cells.prefix(7), id: \.self) { day in
+                    Text(Format.weekdayLetter(day, calendar: calendar))
+                        .font(SkyFont.caption)
+                        .foregroundStyle(day.weekday == 1 ? SkyColor.pinkText : SkyColor.inkSecondary)
+                        .frame(maxWidth: .infinity)
+                        .accessibilityHidden(true)
+                }
+                ForEach(cells, id: \.self) { day in
+                    cell(day)
                 }
             }
         }
+        .padding(Space.sm)
+        .card(radius: Radius.row)
     }
 
-    private var monthTitle: String {
-        guard let first = days.first else { return "" }
-        return first.noonDate(in: calendar).formatted(.dateTime.month(.wide).year())
-    }
-
-    private func accessibilityLabel(_ day: DayKey) -> String {
-        var label = Format.longDate(day, calendar: calendar)
-        if day == today { label += ", today" }
-        if busy.contains(day) { label += ", has tasks" }
-        return label
+    private func cell(_ day: DayKey) -> some View {
+        let isSelected = day == selected
+        let inMonth = day.month == month.month
+        return Button { onSelect(day) } label: {
+            VStack(spacing: 2) {
+                Text("\(day.day)")
+                    .font(.system(.callout, design: .rounded, weight: day == today || isSelected ? .bold : .medium))
+                    .foregroundStyle(isSelected ? Color.white : day == today ? SkyColor.deepSky : inMonth ? SkyColor.ink : SkyColor.inkSecondary.opacity(0.55))
+                Rectangle()
+                    .fill(busy.contains(day) ? (isSelected ? Color.white : SkyColor.sky) : Color.clear)
+                    .frame(width: 5, height: 5)
+            }
+            .frame(maxWidth: .infinity, minHeight: 44)
+            .background(isSelected ? SkyColor.pink : Color.clear, in: Circle())
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(day.noonDate(in: calendar).formatted(date: .complete, time: .omitted))
+        .accessibilityValue(busy.contains(day) ? "Has tasks" : "")
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 

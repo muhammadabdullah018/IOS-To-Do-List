@@ -17,6 +17,10 @@
 	<dict>
 		<key>UIColorName</key>
 		<string>LaunchBackground</string>
+		<key>UIImageName</key>
+		<string>LaunchMark</string>
 	</dict>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>

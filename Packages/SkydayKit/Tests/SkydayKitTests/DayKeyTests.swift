@@ -27,6 +27,14 @@ final class DayKeyTests: XCTestCase {
         XCTAssertTrue(DayKey.isLeapYear(2000))
     }
 
+    func testAddingMonthsClampsAndCrossesYears() {
+        XCTAssertEqual(T.day(2027, 1, 31).addingMonths(1), T.day(2027, 2, 28))
+        XCTAssertEqual(T.day(2028, 1, 31).addingMonths(1), T.day(2028, 2, 29))
+        XCTAssertEqual(T.day(2026, 12, 15).addingMonths(1), T.day(2027, 1, 15))
+        XCTAssertEqual(T.day(2026, 1, 15).addingMonths(-1), T.day(2025, 12, 15))
+        XCTAssertEqual(T.day(2026, 3, 31).addingMonths(-13), T.day(2025, 2, 28))
+    }
+
     func testStartOfWeek() {
         let tue = T.day(2026, 11, 3)
         XCTAssertEqual(tue.startOfWeek(firstWeekday: 2), T.day(2026, 11, 2)) // Monday

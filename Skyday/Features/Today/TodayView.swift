@@ -79,8 +79,11 @@ struct TodayView: View {
                         .shadow(color: SkyColor.skyTextShadow, radius: 2, x: 0, y: 1)
                     HStack(alignment: .lastTextBaseline, spacing: 8) {
                         SkyTitle(text: greeting(hour: hour), font: .system(.title, design: .rounded, weight: .bold))
-                        Image(systemName: hour >= 20 || hour < 5 ? "moon.stars.fill" : "sun.max.fill")
+                        // Morphs between sun and moon as the day turns, and bounces when the screen opens.
+                        Image(systemName: hour >= 20 || hour < 5 ? "moon.stars.fill" : (hour >= 17 ? "sun.haze.fill" : "sun.max.fill"))
                             .font(.system(size: 22, weight: .bold))
+                            .contentTransition(.symbolEffect(.replace.downUp))
+                            .symbolEffect(.bounce, options: .nonRepeating, value: reduceMotion ? 0 : hour)
                             .foregroundStyle(SkyColor.star)
                             .shadow(color: SkyColor.skyTextShadow, radius: 2, x: 0, y: 1)
                             .accessibilityHidden(true)
@@ -140,11 +143,12 @@ struct TodayView: View {
                 }
             }
 
-            ForEach(shown) { task in
+            ForEach(Array(shown.enumerated()), id: \.element.id) { index, task in
                 TaskRow(model: TaskRowModel(task: task, list: store.list(task.listID), isOverdue: store.isOverdue(task), today: today),
                         onToggle: { complete(task) },
                         onOpen: { router.present(.task(task.id)) })
                     .contextMenu { taskMenu(task, today: today) }
+                    .staggeredAppear(index)
                     .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .top)))
             }
 

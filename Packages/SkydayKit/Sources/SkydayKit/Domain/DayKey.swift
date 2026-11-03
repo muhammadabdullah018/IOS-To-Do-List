@@ -61,6 +61,14 @@ public struct DayKey: Hashable, Comparable, Codable, Sendable, CustomStringConve
         return (w < 0 ? w + 7 : w) + 1
     }
 
+    /// Same day `months` later, clamped to the target month's length (Jan 31 + 1 = Feb 28/29).
+    public func addingMonths(_ months: Int) -> DayKey {
+        let index = monthIndex + months
+        let y = Int((Double(index) / 12).rounded(.down))
+        let m = index - y * 12 + 1
+        return DayKey(year: y, month: m, day: min(day, DayKey.daysInMonth(year: y, month: m)))
+    }
+
     /// Month index since year 0, used for monthly recurrence intervals.
     public var monthIndex: Int { year * 12 + (month - 1) }
 

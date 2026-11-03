@@ -30,6 +30,8 @@ struct SettingsView: View {
                 goalSection
                 remindersSection
                 digestSection
+                feedbackSection
+                widgetsSection
                 dataSection
                 aboutSection
             }
@@ -163,6 +165,30 @@ struct SettingsView: View {
             Text("Daily summaries")
         } footer: {
             Text("Sent only on days with tasks. Counts reflect your tasks as of the last time you used Skyday.")
+        }
+    }
+
+    private var feedbackSection: some View {
+        Section {
+            Toggle("Haptics", isOn: Binding(get: { store.settings.haptics },
+                                            set: { v in store.updateSettings { $0.haptics = v } }))
+        } header: {
+            Text("Sounds & haptics")
+        } footer: {
+            Text("Light taps when you finish a task or reach your goal. Reminder sound is under Reminders.")
+        }
+    }
+
+    private var widgetsSection: some View {
+        Section {
+            Label("Touch and hold your Home Screen, tap +, search for Skyday, then choose the small or medium widget.",
+                  systemImage: "square.grid.2x2")
+                .font(SkyFont.meta)
+                .foregroundStyle(SkyColor.inkSecondary)
+        } header: {
+            Text("Widgets")
+        } footer: {
+            Text("Widgets show today's progress and next tasks. iOS decides how often they refresh.")
         }
     }
 

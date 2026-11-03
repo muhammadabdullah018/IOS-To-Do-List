@@ -9,6 +9,7 @@ struct RootView: View {
     @Environment(NotificationService.self) private var notifications
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var showSplash = !Motion.isUITesting
 
     var body: some View {
         @Bindable var router = router
@@ -54,6 +55,11 @@ struct RootView: View {
             sheetContent(route)
         }
         .overlay(alignment: .bottom) { undoOverlay }
+        .overlay {
+            if showSplash && !reduceMotion {
+                LaunchSplash(isVisible: $showSplash).transition(.opacity)
+            }
+        }
         .alert("Data recovery", isPresented: Binding(get: { store.recoveryNotice != nil },
                                                      set: { if !$0 { store.dismissRecoveryNotice() } })) {
             Button("OK", role: .cancel) { store.dismissRecoveryNotice() }

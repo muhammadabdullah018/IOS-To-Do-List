@@ -70,11 +70,12 @@ struct ListsView: View {
 
     private var listsSection: some View {
         VStack(alignment: .leading, spacing: Space.sm) {
-            ForEach(store.sortedLists) { list in
+            ForEach(Array(store.sortedLists.enumerated()), id: \.element.id) { index, list in
                 NavigationLink(value: ListsRoute.list(list.id)) {
                     ListCard(list: list, openCount: store.openCount(listID: list.id))
                 }
                 .buttonStyle(PressableButtonStyle())
+                .staggeredAppear(index)
                 .contextMenu {
                     Button { router.present(.editList(list.id)) } label: { Label("Edit list", systemImage: "pencil") }
                     Button { router.present(.newTask(TaskPrefill(listID: list.id))) } label: { Label("Add task", systemImage: "plus") }

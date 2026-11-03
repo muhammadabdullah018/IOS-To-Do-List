@@ -32,6 +32,7 @@ final class AppEnvironment {
     }
 
     func start() {
+        Haptics.isEnabled = store.data.settings.haptics
         notifications.registerCategories()
         Task {
             await notifications.refreshPermission()
@@ -41,6 +42,7 @@ final class AppEnvironment {
     }
 
     private func didCommit(_ data: AppData) {
+        Haptics.isEnabled = data.settings.haptics
         notifications.scheduleSync(data, calendar: store.calendar)
         WidgetBridge.publish(data, now: store.now, calendar: store.calendar)
     }

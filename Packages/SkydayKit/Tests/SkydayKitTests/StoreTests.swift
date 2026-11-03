@@ -369,6 +369,7 @@ final class StoreTests: XCTestCase {
         XCTAssertEqual(data.tasks.first?.priority, Priority.none)
         XCTAssertEqual(data.tasks.first?.listID, inbox, "orphaned task repaired into Inbox")
         XCTAssertEqual(data.settings.dailyGoal, 3)
+        XCTAssertTrue(data.settings.haptics, "haptics default on for older documents")
     }
 
     func testExportImportRoundTrip() async throws {

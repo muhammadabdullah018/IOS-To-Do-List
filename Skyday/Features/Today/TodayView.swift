@@ -87,7 +87,7 @@ struct TodayView: View {
                     }
                 }
                 Spacer(minLength: Space.sm)
-                SkyCircleButton(systemImage: "calendar", label: "Plan and calendar") {
+                SkyCircleButton(systemImage: "calendar", label: "Calendar") {
                     router.todayPath.append(.plan(today))
                 }
             }
@@ -129,9 +129,9 @@ struct TodayView: View {
             }
 
             if !hasAnyTasks {
-                EmptySkyState(title: "Your sky is clear",
-                              message: "Add your first task: a class, a deadline, or one small habit.",
-                              actionTitle: "Add your first task") {
+                EmptySkyState(title: "No tasks yet",
+                              message: "Add your first task and start building your streak.",
+                              actionTitle: "Add task") {
                     router.present(.newTask(TaskPrefill(dueDay: today)))
                 }
             } else if open.isEmpty && overview.completedToday.isEmpty {

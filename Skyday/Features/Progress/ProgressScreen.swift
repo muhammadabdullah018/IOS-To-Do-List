@@ -28,7 +28,14 @@ struct ProgressScreen: View {
                                 .accessibilityIdentifier("settingsButton")
                             }
                             Spacer(minLength: Space.xs)
-                            StreakBubble(summary: summary)
+                            Button {
+                                Haptics.selection()
+                                router.progressPath.append(.streaks)
+                            } label: {
+                                StreakBubble(summary: summary)
+                            }
+                            .buttonStyle(PressableButtonStyle())
+                            .accessibilityHint("Opens streaks and achievements")
                             // Leaves the floating island in the art visible under the bubble.
                             Spacer(minLength: 76)
                         }
@@ -70,10 +77,34 @@ struct ProgressScreen: View {
                             ActivityGrid(days: activity, calendar: store.calendar)
                         }
 
-                        VStack(alignment: .leading, spacing: Space.sm) {
-                            SectionHeader(title: "Little victories")
-                            BadgeGrid(achievements: store.achievements)
+                        Button {
+                            Haptics.selection()
+                            router.progressPath.append(.streaks)
+                        } label: {
+                            HStack(spacing: Space.sm) {
+                                Image(systemName: "trophy.fill")
+                                    .font(.system(size: 22, weight: .semibold))
+                                    .foregroundStyle(SkyColor.star)
+                                    .frame(width: 44, height: 44)
+                                    .background(SkyColor.pinkSoft, in: RoundedRectangle(cornerRadius: Radius.tile, style: .continuous))
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Streak & Achievements")
+                                        .font(SkyFont.cardTitle)
+                                        .foregroundStyle(SkyColor.ink)
+                                    Text("\(unlocked) of \(store.achievements.count) unlocked")
+                                        .font(SkyFont.meta)
+                                        .foregroundStyle(SkyColor.inkSecondary)
+                                }
+                                Spacer(minLength: 0)
+                                Image(systemName: "chevron.right")
+                                    .font(.system(.footnote, weight: .bold))
+                                    .foregroundStyle(SkyColor.inkSecondary)
+                            }
+                            .padding(Space.md)
+                            .card(radius: Radius.row)
                         }
+                        .buttonStyle(PressableButtonStyle())
+                        .accessibilityIdentifier("streaksButton")
                     }
                     .padding(.horizontal, Space.md)
                     .padding(.top, -26)

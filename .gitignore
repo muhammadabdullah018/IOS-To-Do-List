@@ -13,3 +13,19 @@ Packages/*/.swiftpm/
 # macOS
 .DS_Store
 Tools/LinuxTypecheck/.build/
+# Secrets, signing and user data (never commit)
+.env
+.env.*
+*.p12
+*.p8
+*.cer
+*.mobileprovision
+*.provisionprofile
+*.keychain
+*.ipa
+*.xcarchive
+ExportOptions.plist
+skyday-backup*.json
+# Web demo
+web-demo/node_modules/
+web-demo/dist/

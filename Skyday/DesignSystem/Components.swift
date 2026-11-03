@@ -278,7 +278,8 @@ struct EmptySkyState: View {
 
     var body: some View {
         VStack(spacing: Space.md) {
-            PixelSprite(sprite: Sprite.cloudCheck, pixel: 5, palette: PixelPalette.sky.with("W", SkyColor.skySoft).with("S", SkyColor.border))
+            PixelSprite(sprite: Sprite.emptyIsland, pixel: 5, palette: .island)
+                .accessibilityHidden(true)
                 .padding(.top, Space.sm)
             VStack(spacing: 6) {
                 Text(title)

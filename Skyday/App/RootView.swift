@@ -35,8 +35,13 @@ struct RootView: View {
             .tabItem { Label("Lists", systemImage: "square.stack.3d.up") }
             .tag(AppTab.lists)
 
-            NavigationStack {
+            NavigationStack(path: $router.progressPath) {
                 ProgressScreen()
+                    .navigationDestination(for: ProgressRoute.self) { route in
+                        switch route {
+                        case .streaks: StreaksView()
+                        }
+                    }
             }
             .tabItem { Label("Progress", systemImage: "chart.bar") }
             .tag(AppTab.progress)

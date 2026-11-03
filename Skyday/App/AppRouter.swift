@@ -37,6 +37,10 @@ enum ListsRoute: Hashable {
     case list(UUID)
 }
 
+enum ProgressRoute: Hashable {
+    case streaks
+}
+
 /// Navigation state for the three-tab shell. Exactly three tabs; everything else is a
 /// sheet or a pushed destination.
 @MainActor
@@ -45,6 +49,7 @@ final class AppRouter {
     var tab: AppTab = .today
     var todayPath: [TodayRoute] = []
     var listsPath: [ListsRoute] = []
+    var progressPath: [ProgressRoute] = []
     var sheet: SheetRoute?
     /// Bumped when the user re-taps a tab or follows a deep link, so screens can scroll to top.
     var scrollToTopToken = 0

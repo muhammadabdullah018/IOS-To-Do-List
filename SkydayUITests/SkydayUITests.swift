@@ -79,4 +79,71 @@ final class SkydayUITests: XCTestCase {
         app.buttons["settingsButton"].tap()
         XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 3))
     }
+
+    func testStreaksOpenFromProgress() {
+        let app = launch(reset: true)
+        app.tabBars.buttons["Progress"].tap()
+        app.buttons["streaksButton"].tap()
+        XCTAssertTrue(app.navigationBars["Streak"].waitForExistence(timeout: 3))
+    }
+
+    func testCalendarOpensFromToday() {
+        let app = launch(reset: true)
+        app.buttons["Calendar"].tap()
+        XCTAssertTrue(app.navigationBars.firstMatch.waitForExistence(timeout: 3))
+        XCTAssertEqual(app.tabBars.buttons.count, 3)
+    }
+
+    /// Walks every main screen and keeps a screenshot of each in the test result
+    /// (CI exports them as an artifact).
+    func testScreenshotTour() {
+        let app = launch(reset: true)
+        snap(app, "10_empty_state")
+
+        for title in ["Finish IR assignment", "Gym - Push Day", "Read 20 pages"] {
+            app.buttons["addTaskButton"].firstMatch.tap()
+            let field = app.textFields["taskTitleField"]
+            XCTAssertTrue(field.waitForExistence(timeout: 3))
+            field.tap()
+            field.typeText(title)
+            if title == "Read 20 pages" { snap(app, "05_add_task") }
+            app.buttons["saveTaskButton"].tap()
+        }
+        let complete = app.buttons["Complete Read 20 pages"]
+        XCTAssertTrue(complete.waitForExistence(timeout: 3))
+        complete.tap()
+        snap(app, "02_today")
+
+        app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Finish IR assignment")).firstMatch.tap()
+        _ = app.buttons["saveTaskButton"].waitForExistence(timeout: 3)
+        snap(app, "06_task_detail")
+        app.swipeDown(velocity: .fast)
+
+        if app.buttons["Calendar"].waitForExistence(timeout: 3) {
+            app.buttons["Calendar"].tap()
+            snap(app, "07_calendar")
+            app.navigationBars.buttons.firstMatch.tap()
+        }
+
+        app.tabBars.buttons["Lists"].tap()
+        snap(app, "03_lists")
+
+        app.tabBars.buttons["Progress"].tap()
+        snap(app, "04_progress")
+        app.buttons["streaksButton"].tap()
+        _ = app.navigationBars["Streak"].waitForExistence(timeout: 3)
+        snap(app, "08_streaks")
+        app.navigationBars.buttons.firstMatch.tap()
+
+        app.buttons["settingsButton"].tap()
+        _ = app.navigationBars["Settings"].waitForExistence(timeout: 3)
+        snap(app, "09_settings")
+    }
+
+    private func snap(_ app: XCUIApplication, _ name: String) {
+        let shot = XCTAttachment(screenshot: app.screenshot())
+        shot.name = name
+        shot.lifetime = .keepAlways
+        add(shot)
+    }
 }

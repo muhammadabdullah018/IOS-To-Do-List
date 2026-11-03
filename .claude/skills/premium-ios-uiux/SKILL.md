@@ -20,7 +20,7 @@ The person: a university student or young professional who opens the app for sec
 - Colors/sprites/backgrounds only → `pixel-art-design-system`.
 
 ## Inputs to read first
-1. `MASTER_PROMPT_FOR_CLAUDE_OPUS_5_5.md` §3–4 (screen contracts) and `design/*.png` (composition only; the mockups use placeholder glyphs and a hard colour band, do not copy those).
+1. `design/*.png` and `docs/FEATURE_MATRIX.md` (composition only; the mockups use placeholder glyphs and a hard colour band, do not copy those).
 2. `Skyday/DesignSystem/Theme.swift` (tokens: `SkyColor`, `Space`, `Radius`, `SkyFont`) and `Components.swift`.
 3. The current screen file under `Skyday/Features/`.
 

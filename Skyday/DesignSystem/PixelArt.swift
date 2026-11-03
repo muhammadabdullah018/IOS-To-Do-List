@@ -59,6 +59,28 @@ enum Sprite {
         "...P..."
     ])
 
+    /// Empty-state motif: a floating island with a blossom tree and a sleeping cat.
+    static let emptyIsland = PixelSpriteData(rows: [
+        "..........PPPP............",
+        "........PPPPPPPP..........",
+        "......PPPPKPPPPPPP........",
+        ".....PPPPPPPPPKPPPP.......",
+        "......PPPKPPPPPPPP........",
+        "........PPPPPPPP..........",
+        "...........RR.............",
+        "...........RR.............",
+        "...........RR....WWW......",
+        "...........RR...WWWWWW....",
+        "..GGGGGGGGGGGGGGGGGGGGGG..",
+        ".GGGGGGGGGGGGGGGGGGGGGGGG.",
+        "..EEEEEEEEEEEEEEEEEEEEEE..",
+        "....EEEEEEEEEEEEEEEEEE....",
+        "......EEEEEEEEEEEEEE......",
+        "........EEEEEEEEEE........",
+        "..........EEEEEE..........",
+        "............EE............"
+    ])
+
     /// Empty-state motif: a cloud carrying a check mark.
     static let cloudCheck = PixelSpriteData(rows: [
         "..........WWWWWW..........",
@@ -161,6 +183,12 @@ struct PixelPalette {
     static let onCard = PixelPalette(colors: [
         "W": Color.white.opacity(0.22), "S": Color.white.opacity(0.12), "T": Color.white.opacity(0.5),
         "B": SkyColor.sky, "P": SkyColor.pink
+    ])
+
+    /// Floating island (empty state): blossom pink, bark, grass, earth, white cat.
+    static let island = PixelPalette(colors: [
+        "P": Color(hex: 0xF4A6CF), "K": SkyColor.pink, "R": Color(hex: 0x8A5A3C),
+        "G": Color(hex: 0x5DBB63), "E": Color(hex: 0x9C6B4A), "W": Color.white
     ])
 
     static let locked = PixelPalette(colors: [

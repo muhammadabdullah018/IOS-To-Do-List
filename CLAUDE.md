@@ -2,13 +2,13 @@
 
 Native SwiftUI iPhone productivity app for a university student / young professional who needs to see, in two seconds: what's due today, what's next, how far along they are, what deadlines are coming, and whether their streak is safe.
 
-Specs: `CLAUDE_OPUS_5_5_COMPLETE_IMPLEMENTATION_PROMPT.md` (primary) and `MASTER_PROMPT_FOR_CLAUDE_OPUS_5_5.md` (detailed screen contracts). Architecture: `ARCHITECTURE.md`. Status and evidence: `QA_REPORT.md`.
+Product spec prompts are kept outside the repo by the owner's choice. Architecture: `ARCHITECTURE.md`. Status and evidence: `DELIVERY_STATUS.md`, `QA_REPORT.md`, `docs/`.
 
 ## Product decision priority
 1. The user can see and finish today's important tasks quickly.
 2. Functions must persist and be testable; no decorative mock-only app.
 3. The Today screen is the quality bar; improve it before expanding.
-4. Exactly 3 primary tabs: Today, Lists, Progress. Calendar (`PlanView`), task sheet, list editor and Settings are sheets or pushed destinations.
+4. Exactly 3 primary tabs: Today, Lists, Progress. Calendar (`PlanView`, from Today), Streaks & Achievements (`StreaksView`, from Progress), task sheet, list editor and Settings are sheets or pushed destinations.
 5. Sky palette `#0593C6`, `#FCFFFF`, `#D83995`; sky cloud illustration must be low visual noise and preserve text contrast. Small text uses the derived accessible shades (`SkyColor.deepSky`, `.pinkText`, `.inkSecondary`).
 6. Layout language (from the user's Skyday reference sheet): light app; an illustrated pixel-sky header per tab (Today switches day/sunset/night by time), white rounded cards on a pale sky page, soft-pink streak badge, native 3-tab bar. Palette adds Light Sky `#D7F2FF` and Soft Pink `#FFE6F4`. Components: `Skyday/DesignSystem/Cards.swift`; art: `Tools/make_sky_art.py`.
 
@@ -50,3 +50,6 @@ Delegate only distinct, well-scoped work; never run agents for the sake of agent
 
 ## Development order
 Tokens and Today → persistent task lifecycle → Lists → Progress → Calendar → Reminders → Widgets → QA. (v1 has completed this pass; see `QA_REPORT.md` for what is still unverified on device.)
+
+## Commits
+Commit with the repository owner's configured Git identity. No `Co-Authored-By`, session links or other AI attribution in commits or PR bodies (`.claude/settings.json` disables it). Never rewrite published history.

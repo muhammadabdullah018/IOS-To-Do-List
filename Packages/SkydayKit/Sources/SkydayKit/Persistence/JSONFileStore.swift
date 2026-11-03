@@ -86,7 +86,12 @@ public final class JSONFileStore: DataPersisting {
     public func save(_ data: AppData) throws {
         try fileManager.createDirectory(at: fileURL.deletingLastPathComponent(), withIntermediateDirectories: true)
         let encoded = try JSONFileStore.encoder().encode(data)
+        #if os(iOS)
+        // Readable after first unlock so reminders, widget refresh and notification actions work while locked.
+        try encoded.write(to: fileURL, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
+        #else
         try encoded.write(to: fileURL, options: [.atomic])
+        #endif
     }
 
     public func delete() throws {

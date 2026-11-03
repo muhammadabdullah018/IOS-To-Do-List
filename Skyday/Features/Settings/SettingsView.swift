@@ -236,7 +236,7 @@ struct SettingsView: View {
         let stamp = store.today.description
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("Skyday-backup-\(stamp).json")
         do {
-            try data.write(to: url, options: .atomic)
+            try data.write(to: url, options: [.atomic, .completeFileProtection])
             return url
         } catch {
             return nil

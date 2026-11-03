@@ -29,3 +29,4 @@ skyday-backup*.json
 # Web demo
 web-demo/node_modules/
 web-demo/dist/
+web-demo/*.tsbuildinfo

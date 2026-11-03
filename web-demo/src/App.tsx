@@ -206,9 +206,9 @@ function Today(ctx: Ctx) {
         {empty ? (
           <div className="card empty">
             <Sprite rows={SPRITES.ISLAND} px={6} />
-            <h3>No Tasks Yet</h3>
-            <p>Add your first task and start building your streak!</p>
-            <button className="primary" onClick={() => ctx.setSheet({ kind: 'task', dueDay: today })}>+ Add Task</button>
+            <h3>No tasks yet</h3>
+            <p>Add your first task and start building your streak.</p>
+            <button className="primary" onClick={() => ctx.setSheet({ kind: 'task', dueDay: today })}>+ Add task</button>
           </div>
         ) : open.length === 0 && doneToday.length === 0 ? (
           <div className="card clear"><Sprite rows={SPRITES.CLOUD_SMALL} px={3} /><span><strong>Nothing due today</strong><small>Add something or plan ahead.</small></span></div>

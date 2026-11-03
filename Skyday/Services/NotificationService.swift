@@ -28,6 +28,7 @@ final class NotificationService {
         let snooze = UNNotificationAction(identifier: SkydayIdentifiers.snoozeAction, title: "Remind me in 1 hour", options: [])
         let category = UNNotificationCategory(identifier: SkydayIdentifiers.reminderCategory,
                                               actions: [complete, snooze], intentIdentifiers: [],
+                                              hiddenPreviewsBodyPlaceholder: "Skyday reminder",
                                               options: [])
         center.setNotificationCategories([category])
     }

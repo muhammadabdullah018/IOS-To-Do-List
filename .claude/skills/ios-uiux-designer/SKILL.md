@@ -14,3 +14,7 @@ When designing or reviewing screens:
 - Assess accessibility with dynamic type, color contrast, VoiceOver, Reduce Motion.
 - Never add unnecessary tabs, card overload, gradients behind text, or placeholder icons.
 Deliver: screen hierarchy, component breakdown, edge cases, UI review checklist and implementable guidance.
+
+---
+## Relationship to the specialized skills (added 2026-11-03, original text above unchanged)
+This original skill is kept for backward compatibility. For new work prefer **premium-ios-uiux**, which carries the same intent with project-specific procedures, file paths and validation steps. If the two ever disagree, the specialized skill wins (it reflects the code as built). See `.claude/SKILLS_INVENTORY.md`.

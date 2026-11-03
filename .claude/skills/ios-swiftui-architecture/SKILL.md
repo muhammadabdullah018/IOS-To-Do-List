@@ -12,3 +12,7 @@ description: Implement native SwiftUI navigation, presentation, state flow, Swif
 - All task mutations must persist and visibly update list counts/progress.
 - Handle app activation, permission changes, preview seeds, process relaunch, and accessibility.
 - Never claim compilation if xcodebuild could not run. Include build commands and real logs in QA report.
+
+---
+## Relationship to the specialized skills (added 2026-11-03, original text above unchanged)
+This original skill is kept for backward compatibility. For new work prefer **swiftui-engineering, ios-data-persistence**, which carries the same intent with project-specific procedures, file paths and validation steps. If the two ever disagree, the specialized skill wins (it reflects the code as built). See `.claude/SKILLS_INVENTORY.md`.

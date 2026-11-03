@@ -107,13 +107,15 @@ enum Sprite {
             ".DDDDDDD."
         ])
         case .moon: return PixelSpriteData(rows: [
-            "..BBBB...",
+            "....BBB..",
+            "..BBB....",
             ".BBB.....",
-            "BBB......",
-            "BBB......",
-            "BBB.....B",
-            ".BBB..BB.",
-            "..BBBBB.."
+            ".BBB.....",
+            "BBBB.....",
+            ".BBB.....",
+            ".BBBB....",
+            "..BBBBB..",
+            "....BBB.."
         ])
         case .heart: return PixelSpriteData(rows: [
             ".PP...PP.",

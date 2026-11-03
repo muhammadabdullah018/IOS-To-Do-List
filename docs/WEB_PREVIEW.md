@@ -14,6 +14,9 @@ npm run typecheck
 npm run build      # static output in web-demo/dist
 ```
 
+## Motion
+Floating pill tab bar with sliding highlight and tap ripple, globe/moon/sun morph icon in the header and launch splash, staggered card entrance, drawn checkmarks. All motion stops with the system "reduce motion" setting.
+
 ## What works
 Three tabs (Today, Lists, Progress); Calendar from Today; Streak & Achievements and Settings from Progress. Create, edit, complete, reopen, undo, delete (with confirmation) tasks; subtasks; due date and time; priority; daily/weekly/monthly repeats (one record per series, month-end safe); custom lists (create, rename, recolour, delete with confirmation); daily goal; streak and weekly chart; export, validated import and erase-all. Data persists in this browser's `localStorage`.
 

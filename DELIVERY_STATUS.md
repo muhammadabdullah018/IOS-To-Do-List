@@ -18,7 +18,7 @@ Environment: Windows 11 Pro (no Xcode, no Swift locally). iOS builds and tests r
 | Today | DONE | `TodayView.swift`, `02_today.png`, UI tests | VoiceOver walk-through not recorded |
 | Lists / CRUD | DONE | `ListsView.swift`, `testCreateListFromListsTab`, `03_lists.png` | — |
 | Progress / streak | DONE | `StreakTests` (17), `testStreaksOpenFromProgress`, `04_progress.png`, `08_streaks.png` | — |
-| Calendar | DONE | `PlanView.swift`, `testCalendarOpensFromToday`, `07_calendar.png` | iOS shows week strip + agenda, not a full month grid |
+| Calendar | DONE | `PlanView.swift` `MonthGrid`, `testCalendarOpensFromToday`, `07_calendar.png` | — |
 | Task editor/subtasks | DONE | `TaskEditorSheet.swift`, `StoreTests`, `05_add_task.png`, `06_task_detail.png` | — |
 | Recurring tasks | DONE | `RecurrenceTests` (11), 10-relaunch no-duplicate test | — |
 | Offline storage | DONE | relaunch UI test, corrupt-file + schema tests | no iCloud sync (by design) |
@@ -62,7 +62,6 @@ Everything in the feature matrix marked DONE, in the iOS simulator and in the li
 ## What does not work yet
 - Not installed or run on a physical iPhone; reminders and widget not observed on a device.
 - No recorded VoiceOver / largest-text pass.
-- iOS calendar is a week strip, not the board's month grid.
 - Web demo lacks notifications, widgets, search and rest days.
 - The removed prompt `.md` files still exist in older commits (history kept on purpose).
 

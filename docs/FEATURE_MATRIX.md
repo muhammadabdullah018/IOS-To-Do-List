@@ -13,7 +13,7 @@ Legend: DONE = implemented and verified by the evidence named. PARTIAL = impleme
 | Recurring tasks, no duplicates, month-end/leap/DST | DONE | `RecurrenceTests`, 10-relaunch no-duplicate test | daily/weekly/monthly |
 | Lists CRUD, icons, colours, counts | DONE | UI test `testCreateListFromListsTab`, `03_lists.png` | yes |
 | Search | DONE | `QueryAndSupportTests` | no |
-| Calendar (secondary, from Today) | DONE | `07_calendar.png`, UI test | month grid |
+| Calendar (secondary, from Today): month grid, month paging | DONE | `MonthGrid` in `PlanView.swift`, `DayKeyTests.testAddingMonthsClampsAndCrossesYears`, `07_calendar.png`, UI test | month grid |
 | Progress: stats, weekly chart, goal, 5-week grid | DONE | `StreakTests`, `04_progress.png` | yes (no grid) |
 | Streak & Achievements (from Progress) | DONE | UI test `testStreaksOpenFromProgress`, `08_streaks.png` | yes |
 | Streak rules: goal, rest day, goal changes, time zones | DONE | `StreakTests` (17) | goal only |
@@ -25,4 +25,6 @@ Legend: DONE = implemented and verified by the evidence named. PARTIAL = impleme
 | Empty state (island, tree, cat) | DONE | `10_empty_state.png` | yes |
 | Widgets (small, medium, deep links) | PARTIAL | builds in Xcode; not observed on a Home Screen | no |
 | Accessibility labels, Dynamic Type, Reduce Motion | PARTIAL | labels exercised by UI tests; no AX5/VoiceOver pass recorded | partial |
-| Launch screen | DONE | `UILaunchScreen` in Info.plist; builds | n/a |
+| Launch screen + transition | DONE | `UILaunchScreen` with `LaunchMark`, `LaunchSplash.swift` | splash with icon morph |
+| Haptics setting, widgets help | DONE | `AppSettings.haptics` (decode default tested), Settings sections | n/a |
+| Motion from reference clips | DONE (code) | see `docs/UI_IMPLEMENTATION_REPORT.md` | yes |

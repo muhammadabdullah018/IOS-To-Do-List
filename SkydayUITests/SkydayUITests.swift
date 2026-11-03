@@ -141,6 +141,7 @@ final class SkydayUITests: XCTestCase {
     }
 
     private func snap(_ app: XCUIApplication, _ name: String) {
+        Thread.sleep(forTimeInterval: 1) // let tab and push transitions settle
         let shot = XCTAttachment(screenshot: app.screenshot())
         shot.name = name
         shot.lifetime = .keepAlways

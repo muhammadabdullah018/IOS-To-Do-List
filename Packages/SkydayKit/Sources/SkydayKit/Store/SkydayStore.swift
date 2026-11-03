@@ -30,6 +30,9 @@ public final class SkydayStore {
     public private(set) var lastSaveError: String?
     /// True if the file on disk is from a newer app version; saving is blocked to protect it.
     public private(set) var isReadOnly = false
+    /// Observed day marker. `today` reads it so views re-render when the date changes even if
+    /// no data changed (e.g. at midnight with no recurring tasks to roll forward).
+    public private(set) var currentDay: DayKey
 
     /// Called after every committed change (including undo, import and day rollover).
     @ObservationIgnored public var onCommit: ((AppData) -> Void)?
@@ -41,6 +44,7 @@ public final class SkydayStore {
         self.persistence = persistence
         self.clock = clock
         let now = clock.now()
+        self.currentDay = DayKey(now, calendar: clock.calendar)
         do {
             if let loaded = try persistence.load() {
                 data = loaded
@@ -64,7 +68,10 @@ public final class SkydayStore {
 
     public var calendar: Calendar { clock.calendar }
     public var now: Date { clock.now() }
-    public var today: DayKey { DayKey(clock.now(), calendar: clock.calendar) }
+    public var today: DayKey {
+        _ = currentDay // registers an observation dependency on the day marker
+        return DayKey(clock.now(), calendar: clock.calendar)
+    }
     public var settings: AppSettings { data.settings }
 
     public var sortedLists: [TaskList] {
@@ -355,6 +362,8 @@ public final class SkydayStore {
 
     /// Call on foreground, day change and significant time change. Idempotent.
     public func refreshForNewDay() {
+        let actual = DayKey(clock.now(), calendar: clock.calendar)
+        if actual != currentDay { currentDay = actual }
         rollForwardRecurring(commit: true)
         onCommit?(data)
     }

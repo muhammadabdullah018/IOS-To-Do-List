@@ -174,6 +174,15 @@ final class StoreTests: XCTestCase {
         XCTAssertTrue(h.store.data.events.isEmpty, "skipped occurrences are not counted as done")
     }
 
+    func testDayMarkerAdvancesOnRefresh() async {
+        let h = StoreHarness(at: T.date(2026, 11, 3, 23, 59))
+        XCTAssertEqual(h.store.currentDay, T.day(2026, 11, 3))
+        h.clock.advance(120)
+        h.store.refreshForNewDay()
+        XCTAssertEqual(h.store.currentDay, T.day(2026, 11, 4))
+        XCTAssertEqual(h.store.today, T.day(2026, 11, 4))
+    }
+
     func testStaleNotificationActionIsIgnored() async {
         let h = StoreHarness()
         let t = h.add("Water plants", due: h.store.today, repeat: .daily)

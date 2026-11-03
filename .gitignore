@@ -12,3 +12,4 @@ Packages/*/.build/
 Packages/*/.swiftpm/
 # macOS
 .DS_Store
+Tools/LinuxTypecheck/.build/

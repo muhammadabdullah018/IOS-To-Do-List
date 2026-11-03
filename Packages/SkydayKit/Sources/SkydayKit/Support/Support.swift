@@ -158,6 +158,17 @@ public struct WidgetSnapshot: Codable, Hashable, Sendable {
         public var dueTime: TimeOfDay?
         public var isOverdue: Bool
         public var priority: Priority
+
+        public init(id: UUID, title: String, listName: String, listColor: ListColor, dueTime: TimeOfDay?,
+                    isOverdue: Bool, priority: Priority) {
+            self.id = id
+            self.title = title
+            self.listName = listName
+            self.listColor = listColor
+            self.dueTime = dueTime
+            self.isOverdue = isOverdue
+            self.priority = priority
+        }
     }
 
     public struct Day: Codable, Hashable, Sendable {
@@ -165,6 +176,13 @@ public struct WidgetSnapshot: Codable, Hashable, Sendable {
         public var done: Int
         public var planned: Int
         public var upNext: [Item]
+
+        public init(day: DayKey, done: Int, planned: Int, upNext: [Item]) {
+            self.day = day
+            self.done = done
+            self.planned = planned
+            self.upNext = upNext
+        }
     }
 
     public var generatedAt: Date

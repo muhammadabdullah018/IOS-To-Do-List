@@ -1,15 +1,61 @@
-# Skyday — Complete Claude Code Starter Kit
+# Skyday
 
-This ZIP merges the **previous starter** and the **new skills + agents setup**. It is not a completed native iOS application.
+A calm, offline-first iPhone to-do app for students and young professionals: native SwiftUI with an original pixel-sky identity. Open it and see in two seconds what's due, what's next, how far along you are, what's coming, and whether your streak is safe.
 
-**Contents:** 7 preserved original skills + 10 new specialized skills = **17 SKILL.md files**, **5 agents**, 3 original screen reference PNGs, original master prompt, consolidated master prompt, CLAUDE.md, color references.
+**Status:** feature-complete v1 source. Core logic is compiled and tested (94 tests). The iOS app and widget are type-checked against SDK-shaped stubs but **have not yet been built in Xcode or run on a simulator/device**. See [`QA_REPORT.md`](QA_REPORT.md).
 
-## Get started
+## Features
+- **Today**: illustrated pixel-sky header that follows the time of day (day / sunset / night), greeting with optional name, soft-pink streak badge, progress ring card ("4 of 6 Tasks completed today"), task rows with square checkboxes, "Due Today" and priority flags, completed tasks kept below (checked), Coming up, undo toast, goal-reached pixel burst.
+- **Look**: built from the Skyday reference sheet: Sky Blue `#0593C6`, White `#FCFFFF`, Hot Pink `#D83995`, Light Sky `#D7F2FF`, Soft Pink `#FFE6F4`; original generated pixel art (`Tools/make_sky_art.py`); native tab bar. Preview: [`docs/screens-preview.png`](docs/screens-preview.png) (approximate render, not an iOS screenshot).
+- **Tasks**: title, notes, list, priority, due date, due time, reminder, repeat (daily, weekdays, weekly, every 2 weeks, monthly, yearly, custom interval and weekdays), subtasks. Quick date chips, edit, complete/reopen, delete with undo, move to tomorrow (one-off) or skip this time (repeating).
+- **Lists**: Inbox + custom lists with icon and colour, counts, search across tasks/notes/subtasks/lists, list detail with sort (smart, due, priority, title, manual drag-to-reorder), swipe actions, completed section, safe delete (tasks move to Inbox).
+- **Plan**: week strip with busy-day markers, per-day agenda including projected repeats and past completions.
+- **Progress**: streak bubble on a floating island, Tasks Done / This Week % / Milestones cards, weekly activity bars (today in pink), daily goal stepper, 5-week activity grid, badges.
+- **Reminders**: per-task (at time or N minutes before; date-only at a default time), recurring look-ahead, optional morning plan and evening check-in, Complete / Remind-in-1-hour actions, contextual permission, denied-state guidance.
+- **Widgets**: small and medium Home Screen widgets with deep links.
+- **Data**: local JSON with atomic saves, corruption protection, backup export/import, erase-all with undo. No account, no tracking, no network.
+- **Accessibility**: Dynamic Type layouts, VoiceOver labels and values, 44pt targets, Reduce Motion alternatives, WCAG-checked text colours, dark appearance.
 
-1. Extract this ZIP into your Skyday project folder, preserving the hidden `.claude` directory. Back up your existing `.claude` and `CLAUDE.md` first. Merge safely; do not overwrite working application code blindly.
-2. Open the project folder in Claude Code with your preferred Opus model.
-3. Paste or reference `CLAUDE_OPUS_5_5_COMPLETE_IMPLEMENTATION_PROMPT.md`.
-4. Tell Claude to audit the existing repository, reconcile skill overlap, and build the **Today** screen and real task flows first.
-5. To compile/test a native iOS app, use a Mac with Xcode. On Windows, Claude can author files but cannot perform an Xcode simulator build locally.
+Exactly three tabs: Today, Lists, Progress. The app uses its light appearance; night is shown by the Today header art after 8 PM.
 
-The `design/*.png` files are mockups, not verified native screenshots.
+## Run it on an iPhone (macOS)
+Requirements: macOS with **Xcode 16 or newer** (iOS 17+ deployment target).
+
+1. Clone and open `Skyday.xcodeproj`.
+2. Set signing: either pick your team in *Signing & Capabilities* for the **Skyday** and **SkydayWidgetExtension** targets, or regenerate with your IDs so bundle IDs, App Group and code all match:
+   ```bash
+   python3 Tools/generate_xcodeproj.py --team ABCDE12345 --bundle-prefix com.yourname
+   ```
+   Both targets need the App Group `group.<prefix>.app` (*Signing & Capabilities → App Groups*). Without it the app still works; the widget just shows an empty state.
+3. Choose an iPhone simulator or your device and press **Run**.
+4. Run tests: **Product → Test** (SkydayKit unit tests + UI tests), or
+   ```bash
+   xcodebuild -project Skyday.xcodeproj -scheme Skyday \
+     -destination 'platform=iOS Simulator,name=iPhone 16' test
+   ```
+
+If Xcode reports compile errors, they will most likely be small SDK-signature mismatches the Linux stubs couldn't catch. Please fix them or report them. `QA_REPORT.md` lists what's unverified.
+
+## Develop without a Mac (Linux / WSL)
+```bash
+cd Packages/SkydayKit && swift test          # domain, persistence, reminders, streaks
+cd Tools/LinuxTypecheck && swift build       # app + widget vs SDK-shaped stubs (approximate)
+swift Tools/validate_xcodeproj.swift         # project file structure
+```
+Swift 6.0+ toolchain required.
+
+## Repository map
+| Path | What |
+|---|---|
+| `Packages/SkydayKit` | Domain models, rules engines, store, persistence + tests |
+| `Skyday/` | iOS app (SwiftUI) |
+| `SkydayWidget/` | WidgetKit extension |
+| `SkydayUITests/` | XCUITest flows |
+| `Skyday.xcodeproj` | Generated by `Tools/generate_xcodeproj.py` |
+| `Tools/` | Project generator/validator, Linux type-check harness, icon generator |
+| `.claude/` | 17 skills, 5 agents, `SKILLS_INVENTORY.md` |
+| `design/`, `references/` | Original mockups and colour notes |
+| `ARCHITECTURE.md`, `QA_REPORT.md`, `CLAUDE.md` | Design decisions, verification status, AI working rules |
+
+## About the starter kit
+This repository started from the "Skyday Complete Claude Code Starter Kit" (prompts, 17 skills, 5 agents, 3 PNG mockups, colour references), committed unmodified as the first commit. The mockups are art direction, not screenshots of this app.

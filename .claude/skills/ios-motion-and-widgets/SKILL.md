@@ -10,3 +10,7 @@ description: Add restrained native haptics, pixel UI animations, launch experien
 - Use WidgetKit for small/medium Today completion and upcoming tasks, with App Group shared storage/reads only when tested.
 - Widgets have system-controlled refresh cadence: don't promise live updates. Support deep links with correct navigation.
 - Gracefully handle widget and app data being stale/unavailable.
+
+---
+## Relationship to the specialized skills (added 2026-11-03, original text above unchanged)
+This original skill is kept for backward compatibility. For new work prefer **ios-motion-animation, ios-widgets-integration**, which carries the same intent with project-specific procedures, file paths and validation steps. If the two ever disagree, the specialized skill wins (it reflects the code as built). See `.claude/SKILLS_INVENTORY.md`.

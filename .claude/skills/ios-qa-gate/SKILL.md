@@ -10,3 +10,7 @@ description: Audit iOS build, functional state, pixel-background readability, ac
 - Check tappable areas 44pt+, sufficient contrast, text truncation, date localization, voice labels, safe areas and clipped cards.
 - No lorem ipsum, dead navigation, fake 'AI' service, or unusable onboarding.
 - Output QA_REPORT.md with Passed, Failed, Not Run separately and honest reproduction instructions.
+
+---
+## Relationship to the specialized skills (added 2026-11-03, original text above unchanged)
+This original skill is kept for backward compatibility. For new work prefer **ios-testing-performance**, which carries the same intent with project-specific procedures, file paths and validation steps. If the two ever disagree, the specialized skill wins (it reflects the code as built). See `.claude/SKILLS_INVENTORY.md`.

@@ -14,3 +14,7 @@ Palette: #0593C6 blue, #FCFFFF white, #D83995 hot pink. Supporting: #12364A deep
 - Iconography original small sprite/cloud/check illustrations; SF Symbols for functional controls.
 - Dark appearance must have real contrast if enabled; never simply invert art backgrounds.
 Deliver: semantic tokens, illustration components, background variants per screen, and screenshot reviews.
+
+---
+## Relationship to the specialized skills (added 2026-11-03, original text above unchanged)
+This original skill is kept for backward compatibility. For new work prefer **pixel-art-design-system**, which carries the same intent with project-specific procedures, file paths and validation steps. If the two ever disagree, the specialized skill wins (it reflects the code as built). See `.claude/SKILLS_INVENTORY.md`.

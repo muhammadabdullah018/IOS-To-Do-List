@@ -1,0 +1,43 @@
+name: iPhone IPA (unsigned, for Sideloadly)
+
+# Builds a Release app for real iPhones (arm64) WITHOUT signing. It cannot be installed as-is:
+# a signing tool (Sideloadly, AltStore) re-signs it with your own Apple ID. See docs/INSTALL_WITHOUT_MAC.md.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [skyday-delivery, main]
+    paths: [Skyday/**, SkydayWidget/**, Packages/**, Skyday.xcodeproj/**, .github/workflows/ios-device-ipa.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  ipa:
+    runs-on: macos-15-intel
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1)"
+          xcodebuild -version
+      - name: Archive for iPhone (no signing)
+        run: |
+          set -o pipefail
+          xcodebuild archive -project Skyday.xcodeproj -scheme Skyday -configuration Release \
+            -destination 'generic/platform=iOS' -archivePath build/Skyday.xcarchive \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" | tail -30
+      - name: Package .ipa
+        run: |
+          APP=build/Skyday.xcarchive/Products/Applications/Skyday.app
+          test -d "$APP"
+          mkdir -p Payload && cp -R "$APP" Payload/
+          zip -qry Skyday-unsigned.ipa Payload
+          ls -lh Skyday-unsigned.ipa
+          lipo -info "$APP/Skyday"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Skyday-unsigned-ipa
+          path: Skyday-unsigned.ipa
+          retention-days: 30

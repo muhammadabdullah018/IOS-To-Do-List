@@ -1,0 +1,591 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		CC355DF250EAE819DD34C7BB /* SkydayKit in Frameworks */ = {isa = PBXBuildFile; productRef = 029E6EFB11C38C58F813EE46 /* SkydayKit */; };
+		E7F62B4B3628B0D52B0615AB /* SkydayKit in Frameworks */ = {isa = PBXBuildFile; productRef = 70C4B2D2A90E0723362BA921 /* SkydayKit */; };
+		F23AE4B213C598CA6BECEFE9 /* SkydayWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = BA0C5665E46E05DDC0F7F187 /* SkydayWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		282E1695D1D8AC026FCF9035 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B921FA74B9A87BDBAAB49199 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BF3BE251A4AFF04F18429686;
+			remoteInfo = SkydayWidgetExtension;
+		};
+		D65EE0FD6CBEE8072E858608 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B921FA74B9A87BDBAAB49199 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E8E4FE53BF85FA4609975D9A;
+			remoteInfo = Skyday;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		C53A2D46A3530D3AFD61798E /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				F23AE4B213C598CA6BECEFE9 /* SkydayWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		40ABB3062A9E762C2B3EB0E1 /* Skyday.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Skyday.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BA0C5665E46E05DDC0F7F187 /* SkydayWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = SkydayWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		07ABC4488A8CAB0698763C8A /* SkydayUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SkydayUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		1803EB282A0E4433266D48DC /* Exceptions for "Skyday" folder in "Skyday" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+				Skyday.entitlements,
+			);
+			target = E8E4FE53BF85FA4609975D9A /* Skyday */;
+		};
+		7A29D27857AB8B12C6A49923 /* Exceptions for "SkydayWidget" folder in "SkydayWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+				SkydayWidget.entitlements,
+			);
+			target = BF3BE251A4AFF04F18429686 /* SkydayWidgetExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		BE985C150CC0CE35F1E55F05 /* Skyday */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				1803EB282A0E4433266D48DC /* Exceptions for "Skyday" folder in "Skyday" target */,
+			);
+			path = Skyday;
+			sourceTree = "<group>";
+		};
+		E330AFB3A4F15C4EE6111295 /* SkydayUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = SkydayUITests;
+			sourceTree = "<group>";
+		};
+		2203330B2EC2623B120F6713 /* SkydayWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				7A29D27857AB8B12C6A49923 /* Exceptions for "SkydayWidget" folder in "SkydayWidgetExtension" target */,
+			);
+			path = SkydayWidget;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F319DCF4D467262F0F9CAD59 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CC355DF250EAE819DD34C7BB /* SkydayKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9C7CFA42124EFFB15EABD26C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E7F62B4B3628B0D52B0615AB /* SkydayKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8B89875B1995686D3A9403AF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		21BE12581751456B5C6D816E = {
+			isa = PBXGroup;
+			children = (
+				BE985C150CC0CE35F1E55F05 /* Skyday */,
+				2203330B2EC2623B120F6713 /* SkydayWidget */,
+				E330AFB3A4F15C4EE6111295 /* SkydayUITests */,
+				548F11DDEC8DE40A461FAA56 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		548F11DDEC8DE40A461FAA56 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				40ABB3062A9E762C2B3EB0E1 /* Skyday.app */,
+				BA0C5665E46E05DDC0F7F187 /* SkydayWidgetExtension.appex */,
+				07ABC4488A8CAB0698763C8A /* SkydayUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		E8E4FE53BF85FA4609975D9A /* Skyday */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 832BF3786F12C322BF2A0A82 /* Build configuration list for PBXNativeTarget "Skyday" */;
+			buildPhases = (
+				FD7011B8A372A40982B3B621 /* Sources */,
+				F319DCF4D467262F0F9CAD59 /* Frameworks */,
+				C2A7EF29AAD75CAF0054CF28 /* Resources */,
+				C53A2D46A3530D3AFD61798E /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B83DA1463C8E8289BB039793 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				BE985C150CC0CE35F1E55F05 /* Skyday */,
+			);
+			name = Skyday;
+			packageProductDependencies = (
+				029E6EFB11C38C58F813EE46 /* SkydayKit */,
+			);
+			productName = Skyday;
+			productReference = 40ABB3062A9E762C2B3EB0E1;
+			productType = "com.apple.product-type.application";
+		};
+		B3B2EFB7F5F3BAE64FF9755E /* SkydayUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0C0AB8E33E2F92A6C8BDCA51 /* Build configuration list for PBXNativeTarget "SkydayUITests" */;
+			buildPhases = (
+				378DFB2C3D91677FFB49A356 /* Sources */,
+				8B89875B1995686D3A9403AF /* Frameworks */,
+				44596B6FD1A08774683A5215 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5F0EDC26EA7FD114FCAEB997 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				E330AFB3A4F15C4EE6111295 /* SkydayUITests */,
+			);
+			name = SkydayUITests;
+			productName = SkydayUITests;
+			productReference = 07ABC4488A8CAB0698763C8A;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		BF3BE251A4AFF04F18429686 /* SkydayWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 85E33C021FBF5DED0DA7FFC2 /* Build configuration list for PBXNativeTarget "SkydayWidgetExtension" */;
+			buildPhases = (
+				44676FB65C3A8579A1B68A79 /* Sources */,
+				9C7CFA42124EFFB15EABD26C /* Frameworks */,
+				65CFCA72F036372AED3CF4C0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				2203330B2EC2623B120F6713 /* SkydayWidget */,
+			);
+			name = SkydayWidgetExtension;
+			packageProductDependencies = (
+				70C4B2D2A90E0723362BA921 /* SkydayKit */,
+			);
+			productName = SkydayWidgetExtension;
+			productReference = BA0C5665E46E05DDC0F7F187;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B921FA74B9A87BDBAAB49199 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					E8E4FE53BF85FA4609975D9A = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					B3B2EFB7F5F3BAE64FF9755E = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = E8E4FE53BF85FA4609975D9A;
+					};
+					BF3BE251A4AFF04F18429686 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = 4530603DC2177B94EEDFD27D /* Build configuration list for PBXProject "Skyday" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 21BE12581751456B5C6D816E;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				97DC964F43BDDBEED12DEF7D /* XCLocalSwiftPackageReference "Packages/SkydayKit" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 548F11DDEC8DE40A461FAA56 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E8E4FE53BF85FA4609975D9A /* Skyday */,
+				BF3BE251A4AFF04F18429686 /* SkydayWidgetExtension */,
+				B3B2EFB7F5F3BAE64FF9755E /* SkydayUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		C2A7EF29AAD75CAF0054CF28 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		44596B6FD1A08774683A5215 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		65CFCA72F036372AED3CF4C0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		FD7011B8A372A40982B3B621 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		378DFB2C3D91677FFB49A356 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		44676FB65C3A8579A1B68A79 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B83DA1463C8E8289BB039793 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BF3BE251A4AFF04F18429686 /* SkydayWidgetExtension */;
+			targetProxy = 282E1695D1D8AC026FCF9035 /* PBXContainerItemProxy */;
+		};
+		5F0EDC26EA7FD114FCAEB997 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E8E4FE53BF85FA4609975D9A /* Skyday */;
+			targetProxy = D65EE0FD6CBEE8072E858608 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		B728A0CCED9A3C9400A5189F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		85E61145B7F70918D5E4D6CF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 5.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		A925313E81702F1DB75934E5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Skyday/Skyday.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Skyday/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Skyday;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.skyday.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		35D630A8AB0CD49C69E7FFB2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Skyday/Skyday.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Skyday/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Skyday;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.skyday.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		58CD2C48A5C08E2D1D1DD8A8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = SkydayWidget/SkydayWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SkydayWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Skyday;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.skyday.app.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		B75DB469CF20706C48C65125 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = SkydayWidget/SkydayWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SkydayWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Skyday;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.skyday.app.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		615FFDDB83A2931196506F60 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.skyday.app.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_TARGET_NAME = Skyday;
+			};
+			name = Debug;
+		};
+		263FECBCD8A33A8FE9400A3E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.skyday.app.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_TARGET_NAME = Skyday;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		4530603DC2177B94EEDFD27D /* Build configuration list for PBXProject "Skyday" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B728A0CCED9A3C9400A5189F /* Debug */,
+				85E61145B7F70918D5E4D6CF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		832BF3786F12C322BF2A0A82 /* Build configuration list for PBXNativeTarget "Skyday" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A925313E81702F1DB75934E5 /* Debug */,
+				35D630A8AB0CD49C69E7FFB2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0C0AB8E33E2F92A6C8BDCA51 /* Build configuration list for PBXNativeTarget "SkydayUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				615FFDDB83A2931196506F60 /* Debug */,
+				263FECBCD8A33A8FE9400A3E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		85E33C021FBF5DED0DA7FFC2 /* Build configuration list for PBXNativeTarget "SkydayWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				58CD2C48A5C08E2D1D1DD8A8 /* Debug */,
+				B75DB469CF20706C48C65125 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		97DC964F43BDDBEED12DEF7D /* XCLocalSwiftPackageReference "Packages/SkydayKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/SkydayKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		029E6EFB11C38C58F813EE46 /* SkydayKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SkydayKit;
+		};
+		70C4B2D2A90E0723362BA921 /* SkydayKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SkydayKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = B921FA74B9A87BDBAAB49199 /* Project object */;
+}

@@ -9,12 +9,26 @@ struct ListsView: View {
     @FocusState private var searchFocused: Bool
 
     var body: some View {
+        let openTotal = store.data.tasks.filter { !$0.isCompleted }.count
         ScrollView {
             VStack(alignment: .leading, spacing: Space.lg) {
-                PageHeader(overline: "Your space", title: "My lists", subtitle: "Everything, where it belongs.") {
-                    EmptyView()
+                HeroCard(fill: SkyColor.skyPastel, clouds: false) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Your space")
+                            .font(SkyFont.overline)
+                            .textCase(.uppercase)
+                            .tracking(1.1)
+                            .foregroundStyle(SkyColor.cardInkSecondary)
+                        Text("My lists")
+                            .font(SkyFont.headline)
+                            .foregroundStyle(SkyColor.cardInk)
+                            .accessibilityAddTraits(.isHeader)
+                        Text("\(store.data.lists.count) lists · \(openTotal) open \(openTotal == 1 ? "task" : "tasks")")
+                            .font(.system(.subheadline, weight: .semibold))
+                            .foregroundStyle(SkyColor.cardInkSecondary)
+                    }
+                    SearchField(text: $query, focused: $searchFocused)
                 }
-                SearchField(text: $query, focused: $searchFocused)
 
                 if query.trimmingCharacters(in: .whitespaces).isEmpty {
                     listsSection
@@ -22,20 +36,13 @@ struct ListsView: View {
                     SearchResultsView(results: store.search(query))
                 }
             }
-            .padding(.horizontal, Space.gutter)
-            .padding(.top, Space.sm)
-            .padding(.bottom, Space.xxl)
-            .background(alignment: .top) {
-                VStack(spacing: 0) {
-                    SkyColor.skyBands[0].frame(height: 600)
-                    SkyBackground(variant: .lists)
-                }
-                .offset(y: -600)
-                .padding(.horizontal, -Space.gutter)
-            }
+            .padding(.horizontal, Space.md)
+            .padding(.top, Space.xs)
+            .padding(.bottom, Space.lg)
         }
         .scrollDismissesKeyboard(.interactively)
-        .background(SkyColor.page.ignoresSafeArea())
+        .scrollIndicators(.hidden)
+        .background(SkyColor.canvas.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .confirmationDialog(deleteTitle, isPresented: Binding(get: { pendingDelete != nil }, set: { if !$0 { pendingDelete = nil } }),
                             titleVisibility: .visible) {
@@ -74,9 +81,10 @@ struct ListsView: View {
             } label: {
                 Label("Create a list", systemImage: "plus")
                     .font(.system(.headline, design: .rounded, weight: .semibold))
-                    .foregroundStyle(SkyColor.deepSky)
+                    .foregroundStyle(SkyColor.onCanvas)
                     .frame(maxWidth: .infinity, minHeight: 56)
-                    .background(SkyColor.surfaceSunken, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
+                    .background(SkyColor.raised, in: Capsule())
+                    .overlay(Capsule().strokeBorder(Color.white.opacity(0.08), lineWidth: 1))
             }
             .buttonStyle(PressableButtonStyle())
             .accessibilityIdentifier("createListButton")
@@ -94,20 +102,23 @@ struct ListCard: View {
             ListIconTile(list: list, size: 52)
             VStack(alignment: .leading, spacing: 3) {
                 Text(list.name)
-                    .font(SkyFont.cardTitle)
-                    .foregroundStyle(SkyColor.ink)
+                    .font(SkyFont.cardTitle2)
+                    .foregroundStyle(SkyColor.cardInk)
                     .lineLimit(1)
                 Text(openCount == 0 ? "No open tasks" : (openCount == 1 ? "1 open task" : "\(openCount) open tasks"))
                     .font(SkyFont.meta)
-                    .foregroundStyle(SkyColor.inkSecondary)
+                    .foregroundStyle(SkyColor.cardInkSecondary)
             }
             Spacer()
-            Image(systemName: "chevron.right")
-                .font(.system(.footnote, weight: .bold))
-                .foregroundStyle(SkyColor.inkSecondary)
+            Image(systemName: "arrow.up.right")
+                .font(.system(size: 15, weight: .bold))
+                .foregroundStyle(SkyColor.onCanvas)
+                .frame(width: 40, height: 40)
+                .background(SkyColor.cardInk, in: Circle())
+                .accessibilityHidden(true)
         }
         .padding(Space.md)
-        .card()
+        .background(SkyColor.pastel(list.color), in: RoundedRectangle(cornerRadius: Radius.bigCard, style: .continuous))
         .accessibilityElement(children: .combine)
     }
 }
@@ -119,19 +130,19 @@ struct SearchField: View {
     var body: some View {
         HStack(spacing: Space.xs) {
             Image(systemName: "magnifyingglass")
-                .foregroundStyle(SkyColor.inkSecondary)
+                .foregroundStyle(SkyColor.cardInkSecondary)
             TextField("Search tasks and lists", text: $text)
                 .focused(focused)
                 .submitLabel(.search)
                 .autocorrectionDisabled()
-                .foregroundStyle(SkyColor.ink)
+                .foregroundStyle(SkyColor.cardInk)
                 .accessibilityIdentifier("searchField")
             if !text.isEmpty {
                 Button {
                     text = ""
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(SkyColor.inkSecondary)
+                        .foregroundStyle(SkyColor.cardInkSecondary)
                         .frame(width: 44, height: 44)
                 }
                 .accessibilityLabel("Clear search")
@@ -139,8 +150,9 @@ struct SearchField: View {
         }
         .padding(.horizontal, Space.md)
         .frame(minHeight: 52)
-        .background(SkyColor.surface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: Radius.card, style: .continuous).strokeBorder(SkyColor.border, lineWidth: 1))
+        .background(Color.white, in: Capsule())
+        // A white field on a light hero: render its placeholder/cursor in light appearance.
+        .environment(\.colorScheme, .light)
     }
 }
 

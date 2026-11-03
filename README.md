@@ -2,11 +2,12 @@
 
 A calm, offline-first iPhone to-do app for students and young professionals: native SwiftUI with an original pixel-sky identity. Open it and see in two seconds what's due, what's next, how far along you are, what's coming, and whether your streak is safe.
 
-**Status:** feature-complete v1 source. Core logic is compiled and tested (89 tests). The iOS app and widget are type-checked against SDK-shaped stubs but **have not yet been built in Xcode or run on a simulator/device**. See [`QA_REPORT.md`](QA_REPORT.md).
+**Status:** feature-complete v1 source. Core logic is compiled and tested (94 tests). The iOS app and widget are type-checked against SDK-shaped stubs but **have not yet been built in Xcode or run on a simulator/device**. See [`QA_REPORT.md`](QA_REPORT.md).
 
 ## Features
-- **Today**: time-aware header, progress card ("3 of 5"), streak tile with daily-goal pips, Up next (top 3 in do-next order), Coming up (7 days), Done today, pink quick-add button, completion animation + haptics, undo toast, goal-reached pixel burst.
-- **Tasks**: title, notes, list, priority, due date, due time, reminder, repeat (daily, weekdays, weekly, every 2 weeks, monthly, yearly, custom interval and weekdays), subtasks. Quick date chips, edit, complete/reopen, delete with undo, move to tomorrow.
+- **Today**: sky-blue hero (date, greeting with optional name, "You have N tasks left today", progress bar, next task, calendar), status pills (this week · streak · done), big pastel task cards in do-next order, Coming up, Done today, completion animation + haptics, undo toast, goal-reached pixel burst.
+- **Look**: night canvas, bright rounded hero cards, pastel cards, floating capsule tab bar with a pink +, original pixel clouds. Preview: [`docs/today-preview.png`](docs/today-preview.png) (approximate render, not an iOS screenshot).
+- **Tasks**: title, notes, list, priority, due date, due time, reminder, repeat (daily, weekdays, weekly, every 2 weeks, monthly, yearly, custom interval and weekdays), subtasks. Quick date chips, edit, complete/reopen, delete with undo, move to tomorrow (one-off) or skip this time (repeating).
 - **Lists**: Inbox + custom lists with icon and colour, counts, search across tasks/notes/subtasks/lists, list detail with sort (smart, due, priority, title, manual drag-to-reorder), swipe actions, completed section, safe delete (tasks move to Inbox).
 - **Plan**: week strip with busy-day markers, per-day agenda including projected repeats and past completions.
 - **Progress**: current and best streak, milestone track, daily goal stepper, this-week chart with goal line, 5-week activity grid, badges.
@@ -15,7 +16,7 @@ A calm, offline-first iPhone to-do app for students and young professionals: nat
 - **Data**: local JSON with atomic saves, corruption protection, backup export/import, erase-all with undo. No account, no tracking, no network.
 - **Accessibility**: Dynamic Type layouts, VoiceOver labels and values, 44pt targets, Reduce Motion alternatives, WCAG-checked text colours, dark appearance.
 
-Exactly three tabs: Today, Lists, Progress.
+Exactly three tabs: Today, Lists, Progress. The app uses its night appearance regardless of the system setting (one line in `RootView` to change).
 
 ## Run it on an iPhone (macOS)
 Requirements: macOS with **Xcode 16 or newer** (iOS 17+ deployment target).

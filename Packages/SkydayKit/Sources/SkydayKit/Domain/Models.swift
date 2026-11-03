@@ -288,6 +288,8 @@ public struct AppSettings: Codable, Hashable, Sendable {
     public var reminderSound: Bool
     /// Last day the "goal reached" celebration played, so it plays once per day.
     public var lastCelebratedDay: DayKey?
+    /// Optional first name for the greeting. Local only; never required.
+    public var displayName: String
 
     public init(
         goalHistory: [GoalChange] = [GoalChange(effectiveFrom: DayKey(year: 1970, month: 1, day: 1), goal: AppSettings.defaultGoal)],
@@ -296,7 +298,8 @@ public struct AppSettings: Codable, Hashable, Sendable {
         morningDigest: DigestSetting = DigestSetting(enabled: false, time: TimeOfDay(hour: 8, minute: 0)),
         eveningDigest: DigestSetting = DigestSetting(enabled: false, time: TimeOfDay(hour: 20, minute: 0)),
         reminderSound: Bool = true,
-        lastCelebratedDay: DayKey? = nil
+        lastCelebratedDay: DayKey? = nil,
+        displayName: String = ""
     ) {
         self.goalHistory = goalHistory.isEmpty
             ? [GoalChange(effectiveFrom: DayKey(year: 1970, month: 1, day: 1), goal: AppSettings.defaultGoal)]
@@ -307,12 +310,13 @@ public struct AppSettings: Codable, Hashable, Sendable {
         self.eveningDigest = eveningDigest
         self.reminderSound = reminderSound
         self.lastCelebratedDay = lastCelebratedDay
+        self.displayName = String(displayName.trimmingCharacters(in: .whitespacesAndNewlines).prefix(40))
     }
 
     public var dailyGoal: Int { goalHistory.last?.goal ?? AppSettings.defaultGoal }
 
     enum CodingKeys: String, CodingKey {
-        case goalHistory, firstWeekday, defaultReminderTime, morningDigest, eveningDigest, reminderSound, lastCelebratedDay
+        case goalHistory, firstWeekday, defaultReminderTime, morningDigest, eveningDigest, reminderSound, lastCelebratedDay, displayName
     }
 
     public init(from decoder: Decoder) throws {
@@ -325,7 +329,8 @@ public struct AppSettings: Codable, Hashable, Sendable {
             morningDigest: try c.decodeIfPresent(DigestSetting.self, forKey: .morningDigest) ?? d.morningDigest,
             eveningDigest: try c.decodeIfPresent(DigestSetting.self, forKey: .eveningDigest) ?? d.eveningDigest,
             reminderSound: try c.decodeIfPresent(Bool.self, forKey: .reminderSound) ?? d.reminderSound,
-            lastCelebratedDay: try c.decodeIfPresent(DayKey.self, forKey: .lastCelebratedDay)
+            lastCelebratedDay: try c.decodeIfPresent(DayKey.self, forKey: .lastCelebratedDay),
+            displayName: try c.decodeIfPresent(String.self, forKey: .displayName) ?? ""
         )
     }
 }

@@ -204,6 +204,34 @@ final class StoreTests: XCTestCase {
         XCTAssertEqual(updated.recurrenceAnchor, T.day(2026, 11, 3))
     }
 
+    func testRescheduleRefusesRecurringAndSkipAdvancesWithoutCredit() async {
+        let h = StoreHarness() // Tue 2026-11-03
+        let t = h.add("Weekly report", due: T.day(2026, 11, 3), repeat: .weekly())
+        h.store.reschedule(t.id, to: T.day(2026, 11, 4))
+        XCTAssertEqual(h.store.task(t.id)!.dueDay, T.day(2026, 11, 3), "series is not re-anchored by a one-off move")
+        h.store.skipOccurrence(t.id)
+        XCTAssertEqual(h.store.task(t.id)!.dueDay, T.day(2026, 11, 10))
+        XCTAssertEqual(h.store.task(t.id)!.recurrenceAnchor, T.day(2026, 11, 3))
+        XCTAssertTrue(h.store.data.events.isEmpty, "skipping earns no credit")
+        XCTAssertEqual(h.store.pendingUndo?.message, "Skipped. Next: \(RelativeDayFormatter.string(for: T.day(2026, 11, 10), today: h.store.today))")
+    }
+
+    func testEditingRecurringOntoCompletedOccurrenceAdvancesPastIt() async {
+        let h = StoreHarness()
+        let t = h.add("Stretch", due: h.store.today, repeat: .daily)
+        h.store.complete(t.id) // today's occurrence done, now due tomorrow
+        var d = TaskDraft(task: h.store.task(t.id)!)
+        d.dueDay = h.store.today // user moves it back onto the completed occurrence
+        h.store.updateTask(t.id, with: d)
+        let task = h.store.task(t.id)!
+        XCTAssertEqual(task.dueDay, h.store.today.adding(days: 1), "never sits on a completed occurrence")
+        XCTAssertTrue(h.store.complete(t.id).didComplete, "the checkbox is live")
+    }
+
+    func testTitleNewlinesBecomeSpaces() async {
+        XCTAssertEqual(TaskDraft(title: "  Read\nchapter 4\n", listID: UUID()).trimmedTitle, "Read chapter 4")
+    }
+
     func testUndoRecurringCompletionRestoresOccurrence() async {
         let h = StoreHarness()
         let t = h.add("Journal", due: h.store.today, repeat: .daily)
@@ -259,6 +287,7 @@ final class StoreTests: XCTestCase {
     }
 
     func testRescheduleToTomorrowAndSomeday() async {
+        // One-off tasks only; recurring tasks use skipOccurrence.
         let h = StoreHarness()
         let t = h.add("Call bank", due: T.day(2026, 11, 1), time: TimeOfDay(hour: 10, minute: 0), reminder: 0)
         h.store.reschedule(t.id, to: h.store.today.adding(days: 1))
@@ -279,6 +308,13 @@ final class StoreTests: XCTestCase {
         XCTAssertEqual(h.relaunch().settings.dailyGoal, 5)
         h.store.setDailyGoal(99)
         XCTAssertEqual(h.store.settings.dailyGoal, AppSettings.goalRange.upperBound)
+    }
+
+    func testDisplayNamePersistsAndIsOptional() async {
+        let h = StoreHarness()
+        XCTAssertEqual(h.store.settings.displayName, "")
+        h.store.updateSettings { $0.displayName = "Abdullah" }
+        XCTAssertEqual(h.relaunch().settings.displayName, "Abdullah")
     }
 
     func testUpdateSettingsCannotBypassGoalHistory() async {

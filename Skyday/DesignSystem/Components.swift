@@ -9,6 +9,8 @@ struct SkyCheckbox: View {
     let isOn: Bool
     var tint: Color = SkyColor.sky
     var isEnabled = true
+    /// Task title, so VoiceOver says "Complete Finish lab report" rather than a bare state.
+    var title: String = ""
     let action: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -32,8 +34,8 @@ struct SkyCheckbox: View {
         }
         .buttonStyle(.plain)
         .disabled(!isEnabled)
-        .accessibilityLabel(isOn ? "Completed" : "Not completed")
-        .accessibilityHint(isOn ? "Double tap to reopen" : "Double tap to complete")
+        .accessibilityLabel(title.isEmpty ? (isOn ? "Completed" : "Not completed") : (isOn ? "Reopen \(title)" : "Complete \(title)"))
+        .accessibilityValue(isOn ? "Completed" : "Not completed")
         .accessibilityAddTraits(.isButton)
     }
 }
@@ -53,13 +55,15 @@ struct CheckShape: Shape {
 /// Discreet stepped bars: 1–3 pixels high. High priority uses the pink accent.
 struct PriorityMark: View {
     let priority: Priority
+    /// On pastel cards the inactive steps use card ink so they stay visible.
+    var onCard = false
 
     var body: some View {
         if priority != .none {
             HStack(alignment: .bottom, spacing: 2) {
                 ForEach(1...3, id: \.self) { level in
                     Rectangle()
-                        .fill(level <= priority.rawValue ? color : SkyColor.track)
+                        .fill(level <= priority.rawValue ? color : (onCard ? SkyColor.cardInk.opacity(0.15) : SkyColor.track))
                         .frame(width: 4, height: CGFloat(4 + level * 3))
                 }
             }
@@ -68,7 +72,10 @@ struct PriorityMark: View {
         }
     }
 
-    private var color: Color { priority == .high ? SkyColor.pink : SkyColor.sky }
+    private var color: Color {
+        if priority == .high { return SkyColor.pink }
+        return onCard ? SkyColor.cardInk : SkyColor.sky
+    }
 }
 
 // MARK: - Task row
@@ -93,10 +100,11 @@ struct TaskRow: View {
     let onToggle: () -> Void
     let onOpen: () -> Void
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
         HStack(alignment: .center, spacing: Space.xs) {
-            SkyCheckbox(isOn: model.isDone, tint: model.task.priority == .high ? SkyColor.pink : SkyColor.sky,
-                        isEnabled: !model.isProjection, action: onToggle)
+            SkyCheckbox(isOn: model.isDone, isEnabled: !model.isProjection, title: model.task.title, action: onToggle)
                 .padding(.leading, Space.xs)
 
             Button(action: onOpen) {
@@ -106,7 +114,7 @@ struct TaskRow: View {
                             .font(SkyFont.rowTitle)
                             .foregroundStyle(model.isDone ? SkyColor.inkSecondary : SkyColor.ink)
                             .strikethrough(model.isDone, color: SkyColor.inkSecondary)
-                            .lineLimit(2)
+                            .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 2)
                             .multilineTextAlignment(.leading)
                         metaLine
                     }
@@ -121,12 +129,15 @@ struct TaskRow: View {
         }
         .frame(minHeight: compact ? 60 : 72)
         .card(radius: Radius.row)
-        .opacity(model.isDone ? 0.75 : 1)
         .accessibilityElement(children: .contain)
     }
 
     private var metaLine: some View {
-        HStack(spacing: 6) {
+        // At accessibility sizes the pieces stack instead of truncating one by one.
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 2))
+            : AnyLayout(HStackLayout(spacing: 6))
+        return layout {
             if let list = model.list {
                 Circle().fill(SkyColor.list(list.color)).frame(width: 7, height: 7)
                 Text(list.name)
@@ -150,7 +161,7 @@ struct TaskRow: View {
         }
         .font(SkyFont.meta)
         .foregroundStyle(SkyColor.inkSecondary)
-        .lineLimit(1)
+        .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1)
     }
 
     private var whenText: String? {
@@ -232,8 +243,8 @@ struct Chip: View {
                 Text(title)
             }
             .font(.system(.subheadline, weight: .semibold))
-            .padding(.horizontal, 14)
-            .frame(minHeight: 36)
+            .padding(.horizontal, Space.md)
+            .frame(minHeight: 44)
             .foregroundStyle(isSelected ? Color.white : SkyColor.deepSky)
             .background(isSelected ? SkyColor.deepSky : SkyColor.surfaceSunken, in: Capsule())
         }
@@ -249,13 +260,13 @@ struct ListIconTile: View {
     var size: CGFloat = 48
 
     var body: some View {
-        RoundedRectangle(cornerRadius: size * 0.3, style: .continuous)
+        RoundedRectangle(cornerRadius: Radius.tile, style: .continuous)
             .fill(SkyColor.list(list.color))
             .frame(width: size, height: size)
             .overlay(
                 Image(systemName: list.icon)
                     .font(.system(size: size * 0.42, weight: .semibold))
-                    .foregroundStyle(Color.white)
+                    .foregroundStyle(SkyColor.glyph(on: list.color))
             )
             .accessibilityHidden(true)
     }
@@ -302,26 +313,6 @@ struct EmptySkyState: View {
     }
 }
 
-// MARK: - Floating add button
-
-struct FloatingAddButton: View {
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Image(systemName: "plus")
-                .font(.system(size: 26, weight: .bold))
-                .foregroundStyle(Color.white)
-                .frame(width: 60, height: 60)
-                .background(SkyColor.pink, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-                .shadow(color: SkyColor.pink.opacity(0.35), radius: 12, x: 0, y: 6)
-        }
-        .buttonStyle(PressableButtonStyle(scale: 0.92))
-        .accessibilityLabel("New task")
-        .accessibilityIdentifier("addTaskButton")
-    }
-}
-
 // MARK: - Undo toast
 
 struct UndoToast: View {
@@ -337,17 +328,17 @@ struct UndoToast: View {
             Spacer(minLength: Space.xs)
             Button("Undo", action: onUndo)
                 .font(.system(.subheadline, weight: .bold))
-                .foregroundStyle(Color(hex: 0x9FE0F8))
+                .foregroundStyle(SkyColor.skyPastel)
                 .frame(minWidth: 44, minHeight: 44)
                 .accessibilityIdentifier("undoButton")
         }
         .padding(.leading, Space.md)
         .padding(.trailing, Space.xs)
-        .background(Color(hex: 0x12364A), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .shadow(color: Color.black.opacity(0.18), radius: 14, x: 0, y: 8)
+        .background(SkyColor.raisedHigh, in: Capsule())
+        .overlay(Capsule().strokeBorder(Color.white.opacity(0.08), lineWidth: 1))
+        .shadow(color: SkyColor.shadow, radius: 14, x: 0, y: 8)
         .padding(.horizontal, Space.md)
-        .accessibilityElement(children: .combine)
-        .accessibilityAction(named: "Undo", onUndo)
+        .accessibilityElement(children: .contain)
     }
 }
 

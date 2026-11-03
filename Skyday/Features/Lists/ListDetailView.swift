@@ -81,7 +81,7 @@ struct ListDetailView: View {
                             Spacer()
                             Image(systemName: showCompleted ? "chevron.up" : "chevron.down")
                         }
-                        .frame(minHeight: 36)
+                        .frame(minHeight: 44)
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
@@ -91,19 +91,19 @@ struct ListDetailView: View {
         }
         .listStyle(.insetGrouped)
         .scrollContentBackground(.hidden)
-        .background(SkyColor.page.ignoresSafeArea())
+        .background(SkyColor.canvas.ignoresSafeArea())
         .navigationTitle(list.name)
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
+                if sort == .manual && open.count > 1 {
+                    EditButton()
+                }
                 Menu {
                     Picker("Sort", selection: $sortRaw) {
                         ForEach(TaskSort.allCases) { option in
                             Text(option.label).tag(option.rawValue)
                         }
-                    }
-                    if sort == .manual {
-                        EditButton()
                     }
                     Divider()
                     Button { router.present(.editList(list.id)) } label: { Label("Edit list", systemImage: "pencil") }
@@ -143,7 +143,7 @@ struct ListDetailView: View {
                 onOpen: { router.present(.task(task.id)) })
             .listRowBackground(Color.clear)
             .listRowSeparator(.hidden)
-            .listRowInsets(EdgeInsets(top: 5, leading: 0, bottom: 5, trailing: 0))
+            .listRowInsets(EdgeInsets(top: Space.xxs, leading: 0, bottom: Space.xxs, trailing: 0))
             .swipeActions(edge: .leading, allowsFullSwipe: true) {
                 Button {
                     Haptics.tick()
@@ -155,7 +155,10 @@ struct ListDetailView: View {
             }
             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                 Button(role: .destructive) { store.deleteTask(task.id) } label: { Label("Delete", systemImage: "trash") }
-                if !task.isCompleted {
+                if !task.isCompleted && task.isRecurring {
+                    Button { store.skipOccurrence(task.id) } label: { Label("Skip", systemImage: "forward.end") }
+                        .tint(SkyColor.deepSky)
+                } else if !task.isCompleted {
                     Button { store.reschedule(task.id, to: today.adding(days: 1)) } label: { Label("Tomorrow", systemImage: "arrow.right") }
                         .tint(SkyColor.deepSky)
                 }
@@ -200,7 +203,7 @@ struct ListEditorSheet: View {
                 }
 
                 Section("Color") {
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: Space.sm), count: 7), spacing: Space.sm) {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 44), spacing: Space.xs)], spacing: Space.xs) {
                         ForEach(ListColor.allCases) { option in
                             Button {
                                 Haptics.selection()
@@ -222,7 +225,7 @@ struct ListEditorSheet: View {
                 }
 
                 Section("Icon") {
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: Space.sm), count: 6), spacing: Space.sm) {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 44), spacing: Space.xs)], spacing: Space.xs) {
                         ForEach(TaskList.iconChoices, id: \.self) { symbol in
                             Button {
                                 Haptics.selection()
@@ -233,7 +236,7 @@ struct ListEditorSheet: View {
                                     .foregroundStyle(icon == symbol ? Color.white : SkyColor.deepSky)
                                     .frame(width: 44, height: 44)
                                     .background(icon == symbol ? SkyColor.list(color) : SkyColor.surfaceSunken,
-                                                in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                                in: RoundedRectangle(cornerRadius: Radius.small, style: .continuous))
                             }
                             .buttonStyle(.plain)
                             .accessibilityLabel(symbol.replacingOccurrences(of: ".fill", with: "").replacingOccurrences(of: ".", with: " "))

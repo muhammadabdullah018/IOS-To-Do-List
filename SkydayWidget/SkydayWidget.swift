@@ -195,7 +195,8 @@ struct MediumWidgetView: View {
                                 if item.isOverdue {
                                     Text("late").font(.caption2.weight(.bold)).foregroundStyle(WColor.pink)
                                 } else if let time = item.dueTime {
-                                    Text(String(format: "%d:%02d", time.hour, time.minute))
+                                    Text(Calendar.current.date(bySettingHour: time.hour, minute: time.minute, second: 0, of: entry.date)?
+                                        .formatted(date: .omitted, time: .shortened) ?? "")
                                         .font(.caption2.weight(.semibold))
                                         .foregroundStyle(WColor.inkSecondary)
                                 }

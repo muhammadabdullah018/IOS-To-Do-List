@@ -17,7 +17,7 @@ Exploratory design work with no code yet.
 ## What can run where
 | Check | Linux/Windows (WSL) | macOS + Xcode 16+ |
 |---|---|---|
-| `cd Packages/SkydayKit && swift test` (89 domain tests) | ✅ | ✅ |
+| `cd Packages/SkydayKit && swift test` (94 domain tests) | ✅ | ✅ |
 | `cd Tools/LinuxTypecheck && swift build` (app + widget vs SDK-shaped stubs) | ✅ | not needed |
 | `swift Tools/validate_xcodeproj.swift` | ✅ | ✅ |
 | `xcodebuild … build` / `test` (real SDK, UI tests) | ❌ | ✅ |

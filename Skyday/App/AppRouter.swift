@@ -49,14 +49,11 @@ final class AppRouter {
     /// Bumped when the user re-taps a tab or follows a deep link, so screens can scroll to top.
     var scrollToTopToken = 0
 
+    /// Presents a sheet. If one is already open (for example the user is mid-edit when a
+    /// notification is tapped) the open sheet wins: replacing it would discard unsaved edits.
     func present(_ route: SheetRoute) {
-        if sheet != nil {
-            // Replace a presented sheet after it dismisses to avoid SwiftUI presentation conflicts.
-            sheet = nil
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in self?.sheet = route }
-        } else {
-            sheet = route
-        }
+        guard sheet == nil else { return }
+        sheet = route
     }
 
     func handle(_ link: DeepLink, store: SkydayStore) {

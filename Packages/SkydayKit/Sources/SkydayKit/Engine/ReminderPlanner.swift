@@ -160,19 +160,22 @@ public enum ReminderPlanner {
 
     /// Minimal change set to move iOS from `pending` to `desired`. Only Skyday-owned IDs are
     /// ever removed.
-    public static func diff(pending: [PendingNotification], desired: [PlannedNotification]) -> (remove: [String], add: [PlannedNotification]) {
+    /// `fingerprintSuffix` carries delivery options that are not part of the planned content
+    /// (e.g. the sound setting), so toggling them replaces pending requests too.
+    public static func diff(pending: [PendingNotification], desired: [PlannedNotification],
+                            fingerprintSuffix: String = "") -> (remove: [String], add: [PlannedNotification]) {
         let desiredByID = Dictionary(desired.map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
         var remove: [String] = []
         var pendingByID: [String: String] = [:]
         for p in pending where p.id.hasPrefix(idPrefix) {
             pendingByID[p.id] = p.fingerprint
             if let want = desiredByID[p.id] {
-                if want.fingerprint != p.fingerprint { remove.append(p.id) }
+                if want.fingerprint + fingerprintSuffix != p.fingerprint { remove.append(p.id) }
             } else {
                 remove.append(p.id)
             }
         }
-        let add = desired.filter { pendingByID[$0.id] != $0.fingerprint }
+        let add = desired.filter { pendingByID[$0.id] != $0.fingerprint + fingerprintSuffix }
         return (remove.sorted(), add)
     }
 }

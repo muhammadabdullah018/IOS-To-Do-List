@@ -24,6 +24,8 @@ let package = Package(
         .target(name: "SkydayWidgetExtension",
                 dependencies: ["SwiftUI", "WidgetKit", .product(name: "SkydayKit", package: "SkydayKit")],
                 path: "Sources/SkydayWidgetExtension",
-                exclude: ["Info.plist", "SkydayWidget.entitlements"])
+                exclude: ["Info.plist", "SkydayWidget.entitlements"]),
+        // UI test sources + XCUITest stubs (Linux XCTest has no XCUIApplication).
+        .testTarget(name: "UITestsCheck", path: "Sources/UITestsCheck")
     ]
 )

@@ -170,7 +170,7 @@ public struct EnvironmentValues {
     public var accessibilityReduceMotion: Bool { fatalError() }
     public var dynamicTypeSize: DynamicTypeSize { fatalError() }
     public var displayScale: CGFloat { fatalError() }
-    public var colorScheme: ColorScheme { fatalError() }
+    public var colorScheme: ColorScheme { get { fatalError() } set {} }
 }
 
 public struct DismissAction {
@@ -536,6 +536,12 @@ extension DynamicViewContent {
 }
 
 public struct GeometryProxy { public var size: CGSize { .zero } }
+public struct ViewDimensions {
+    public var width: CGFloat { 0 }
+    public var height: CGFloat { 0 }
+    public subscript(guide: VerticalAlignment) -> CGFloat { 0 }
+    public subscript(guide: HorizontalAlignment) -> CGFloat { 0 }
+}
 public struct GeometryReader<Content: View>: View {
     public init(@ViewBuilder content: @escaping (GeometryProxy) -> Content) {}
     public var body: Never { fatalError() }
@@ -733,10 +739,14 @@ extension View {
     public func clipShape<S: Shape>(_ shape: S, style: FillStyle = FillStyle()) -> some View { _V() }
     public func shadow(color: Color = Color(red: 0, green: 0, blue: 0), radius: CGFloat, x: CGFloat = 0, y: CGFloat = 0) -> some View { _V() }
     public func opacity(_ opacity: Double) -> some View { _V() }
+    public func clipped(antialiased: Bool = false) -> some View { _V() }
     public func scaleEffect(_ s: CGFloat, anchor: UnitPoint = .center) -> some View { _V() }
     public func rotationEffect(_ angle: Angle, anchor: UnitPoint = .center) -> some View { _V() }
     public func foregroundStyle<S: ShapeStyle>(_ style: S) -> some View { _V() }
     public func tint(_ color: Color?) -> some View { _V() }
+    public func preferredColorScheme(_ colorScheme: ColorScheme?) -> some View { _V() }
+    public func safeAreaInset<V: View>(edge: VerticalEdge, alignment: HorizontalAlignment = .center, spacing: CGFloat? = nil, @ViewBuilder content: () -> V) -> some View { _V() }
+    public func alignmentGuide(_ g: VerticalAlignment, computeValue: @escaping (ViewDimensions) -> CGFloat) -> some View { _V() }
     public func redacted(reason: RedactionReasons) -> some View { _V() }
     public func contentShape<S: Shape>(_ shape: S, eoFill: Bool = false) -> some View { _V() }
 
@@ -770,6 +780,7 @@ extension View {
     public func submitLabel(_ label: SubmitLabel) -> some View { _V() }
     public func onSubmit(of triggers: SubmitTriggers = .text, _ action: @escaping () -> Void) -> some View { _V() }
     public func autocorrectionDisabled(_ disable: Bool = true) -> some View { _V() }
+    public func textContentType(_ textContentType: UITextContentType?) -> some View { _V() }
     public func labelsHidden() -> some View { _V() }
 
     // Lifecycle
@@ -786,6 +797,7 @@ extension View {
 
     // Environment
     public func environment<T: AnyObject & Observable>(_ object: T?) -> some View { _V() }
+    public func environment<V>(_ keyPath: WritableKeyPath<EnvironmentValues, V>, _ value: V) -> some View { _V() }
     public func modifier<M: ViewModifier>(_ modifier: M) -> some View { _V() }
 
     // Navigation & toolbars

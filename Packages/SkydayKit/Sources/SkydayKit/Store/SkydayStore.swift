@@ -157,7 +157,10 @@ public final class SkydayStore {
             task.recurrenceAnchor = d.recurrence == nil ? nil : d.dueDay
             task.snoozedUntil = nil
         }
-        if task.recurrence != nil { task = RecurrenceEngine.normalized(task) }
+        if task.recurrence != nil {
+            task = RecurrenceEngine.normalized(task)
+            task = skippingCompletedOccurrences(task)
+        }
         commit(undoMessage: nil) { $0.tasks[index] = task }
     }
 
@@ -265,21 +268,53 @@ public final class SkydayStore {
         }
     }
 
-    /// Moves a task to another day (e.g. "Tomorrow" swipe). Keeps its time and reminder.
+    /// Moves a one-off task to another day (e.g. "Tomorrow" swipe). Keeps its time and reminder.
+    /// Recurring tasks are not moved this way: shifting one occurrence would re-anchor the
+    /// whole series. Use `skipOccurrence` (or edit the series) instead.
     public func reschedule(_ id: UUID, to day: DayKey?) {
-        guard let t = data.tasks.firstIndex(where: { $0.id == id }) else { return }
+        guard let t = data.tasks.firstIndex(where: { $0.id == id }), !data.tasks[t].isRecurring else { return }
         var task = data.tasks[t]
         task.dueDay = day
         if day == nil {
             task.dueTime = nil
             task.reminderMinutesBefore = nil
-            task.recurrence = nil
         }
-        if task.recurrence != nil { task.recurrenceAnchor = day; task = RecurrenceEngine.normalized(task) }
         task.snoozedUntil = nil
         task.updatedAt = clock.now()
         let label = day.map { RelativeDayFormatter.string(for: $0, today: today) } ?? "Someday"
         commit(undoMessage: "Moved to \(label)") { $0.tasks[t] = task }
+    }
+
+    /// Skips the current occurrence of a recurring task without completing it (no credit).
+    public func skipOccurrence(_ id: UUID) {
+        guard let t = data.tasks.firstIndex(where: { $0.id == id }),
+              let rule = data.tasks[t].recurrence, let due = data.tasks[t].dueDay else { return }
+        var task = data.tasks[t]
+        let anchor = task.recurrenceAnchor ?? due
+        task.recurrenceAnchor = anchor
+        task.dueDay = RecurrenceEngine.nextOccurrence(after: due, rule: rule, anchor: anchor)
+        task.subtasks = task.subtasks.map { Subtask(id: $0.id, title: $0.title, isDone: false) }
+        task.snoozedUntil = nil
+        task.updatedAt = clock.now()
+        task = skippingCompletedOccurrences(task)
+        let label = task.dueDay.map { RelativeDayFormatter.string(for: $0, today: today) } ?? ""
+        commit(undoMessage: "Skipped. Next: \(label)") { $0.tasks[t] = task }
+    }
+
+    /// A recurring task must never sit on an occurrence that is already completed (its
+    /// checkbox would be a dead control). Advance past any such occurrences.
+    private func skippingCompletedOccurrences(_ task: TaskItem) -> TaskItem {
+        guard let rule = task.recurrence, var due = task.dueDay else { return task }
+        let done = Set(data.events.filter { $0.taskID == task.id }.compactMap(\.occurrenceDay))
+        let anchor = task.recurrenceAnchor ?? due
+        var guardCount = 0
+        while done.contains(due) && guardCount < 500 {
+            due = RecurrenceEngine.nextOccurrence(after: due, rule: rule, anchor: anchor)
+            guardCount += 1
+        }
+        var t = task
+        t.dueDay = due
+        return t
     }
 
     /// Persists a new manual order for the given tasks.

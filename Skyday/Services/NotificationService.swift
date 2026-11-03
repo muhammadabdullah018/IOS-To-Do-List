@@ -74,22 +74,31 @@ final class NotificationService {
             PendingNotification(id: $0.identifier, fingerprint: ($0.content.userInfo[SkydayIdentifiers.fingerprintKey] as? String) ?? "")
         }
         // Without permission, desired = [] so stale requests are still cleaned up.
+        // The sound setting is part of each request, so it is part of the fingerprint too.
+        let sound = data.settings.reminderSound
         let desired = canSchedule ? ReminderPlanner.plan(data, now: Date(), calendar: calendar) : []
-        let diff = ReminderPlanner.diff(pending: pending, desired: desired)
+        let diff = ReminderPlanner.diff(pending: pending, desired: desired, fingerprintSuffix: sound ? "|s1" : "|s0")
         if !diff.remove.isEmpty {
             center.removePendingNotificationRequests(withIdentifiers: diff.remove)
         }
         for planned in diff.add {
-            let request = makeRequest(planned, sound: data.settings.reminderSound, calendar: calendar)
+            let request = makeRequest(planned, sound: sound, calendar: calendar)
             do { try await center.add(request) } catch { /* System rejected; next sync retries. */ }
         }
-        // Delivered task reminders for completed/deleted tasks are no longer useful.
-        let liveTaskIDs = Set(data.tasks.filter { !$0.isCompleted }.map { $0.id.uuidString })
+        // Delivered reminders are stale once their task is completed or deleted, or (for
+        // recurring tasks) once the series has moved past that occurrence.
+        let byID = Dictionary(uniqueKeysWithValues: data.tasks.map { ($0.id.uuidString, $0) })
         let delivered = await center.deliveredNotifications()
         let staleDelivered = delivered.compactMap { note -> String? in
+            let info = note.request.content.userInfo
             guard note.request.identifier.hasPrefix(ReminderPlanner.idPrefix),
-                  let id = note.request.content.userInfo[SkydayIdentifiers.taskIDKey] as? String else { return nil }
-            return liveTaskIDs.contains(id) ? nil : note.request.identifier
+                  let id = info[SkydayIdentifiers.taskIDKey] as? String else { return nil }
+            guard let task = byID[id], !task.isCompleted else { return note.request.identifier }
+            if let raw = info["occurrence"] as? String, let occurrence = DayKey(string: raw),
+               let due = task.dueDay, occurrence < due {
+                return note.request.identifier
+            }
+            return nil
         }
         if !staleDelivered.isEmpty { center.removeDeliveredNotifications(withIdentifiers: staleDelivered) }
     }
@@ -99,7 +108,7 @@ final class NotificationService {
         content.title = planned.title
         content.body = planned.body
         if sound { content.sound = .default }
-        var info: [String: Any] = [SkydayIdentifiers.fingerprintKey: planned.fingerprint]
+        var info: [String: Any] = [SkydayIdentifiers.fingerprintKey: planned.fingerprint + (sound ? "|s1" : "|s0")]
         if let taskID = planned.taskID { info[SkydayIdentifiers.taskIDKey] = taskID.uuidString }
         // The occurrence day is the last ID component for task requests.
         if planned.kind == .task, let day = planned.id.split(separator: ".").last { info["occurrence"] = String(day) }
@@ -146,12 +155,17 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
         let action = response.actionIdentifier
         Task { @MainActor in
             let env = AppEnvironment.shared
+            defer { completionHandler() }
             if let taskID {
                 switch action {
                 case SkydayIdentifiers.completeAction:
                     env.store.complete(taskID, expectedOccurrence: occurrence)
+                    // The app may be suspended right after completionHandler, so re-plan now
+                    // instead of relying on the debounced sync.
+                    await env.notifications.sync(env.store.data, calendar: env.store.calendar)
                 case SkydayIdentifiers.snoozeAction:
                     env.store.snooze(taskID, minutes: 60)
+                    await env.notifications.sync(env.store.data, calendar: env.store.calendar)
                 case UNNotificationDefaultActionIdentifier:
                     env.router.handle(.task(taskID), store: env.store)
                 default:
@@ -160,7 +174,6 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
             } else if action == UNNotificationDefaultActionIdentifier {
                 env.router.handle(.today, store: env.store)
             }
-            completionHandler()
         }
     }
 }

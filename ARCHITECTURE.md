@@ -50,7 +50,7 @@ The starter kit preferred SwiftData. I chose a versioned Codable document behind
 `ReminderPlanner.plan` is a pure function from data + now → desired requests with stable IDs, sorted and capped at iOS's 64 pending limit. `diff` compares against pending requests (ID + content fingerprint in `userInfo`) and touches only `skyday.*` IDs. The same data always yields the same requests, so syncing is idempotent. Permission is asked in context (first reminder or digest).
 
 ### Navigation
-`AppRouter`: `tab` (Today/Lists/Progress), `todayPath` ([`TodayRoute.plan(day)`]), `listsPath` ([`ListsRoute.list(id)`]), `sheet` (`SheetRoute`: newTask, task, newList, editList, settings). Deep links (`skyday://today|new|lists|progress|task/<uuid>`) and notification taps route through `router.handle`.
+`RootView` renders only the selected tab inside a `safeAreaInset` that hosts the custom `FloatingTabBar` (3 tabs + pink quick add); the undo toast is pinned 8pt above the bar. `AppRouter`: `tab` (Today/Lists/Progress), `todayPath` ([`TodayRoute.plan(day)`]), `listsPath` ([`ListsRoute.list(id)`]), `sheet` (`SheetRoute`: newTask, task, newList, editList, settings). Deep links (`skyday://today|new|lists|progress|task/<uuid>`) and notification taps route through `router.handle`. `present()` never replaces an open sheet, so a notification tap can't discard an unsaved edit.
 
 ### Widget
 Precomputed `WidgetSnapshot` (today + tomorrow views, streak, goal) written to the App Group on every commit; the timeline has a midnight entry that switches to "tomorrow". No App Intents check-off in v1, because that would make the widget a second writer of the main store.

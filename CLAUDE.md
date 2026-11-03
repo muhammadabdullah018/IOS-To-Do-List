@@ -10,6 +10,7 @@ Specs: `CLAUDE_OPUS_5_5_COMPLETE_IMPLEMENTATION_PROMPT.md` (primary) and `MASTER
 3. The Today screen is the quality bar; improve it before expanding.
 4. Exactly 3 primary tabs: Today, Lists, Progress. Calendar (`PlanView`), task sheet, list editor and Settings are sheets or pushed destinations.
 5. Sky palette `#0593C6`, `#FCFFFF`, `#D83995`; sky cloud illustration must be low visual noise and preserve text contrast. Small text uses the derived accessible shades (`SkyColor.deepSky`, `.pinkText`, `.inkSecondary`).
+6. Layout language (v2, chosen by the user from a reference): night canvas, one bright hero card per tab, dark status pills, big pastel task/list cards, floating capsule tab bar with a pink +. Components live in `Skyday/DesignSystem/Cards.swift`.
 
 ## Prohibited
 Mandatory account/login, onboarding carousel, subscriptions/paywall, ads, analytics SDKs, social features, chat/AI assistant, cloud backend, extra tabs, hamburger menus, random gradients, stock or unlicensed art, pixelated body text, decorative controls with no action, fake data in production views.

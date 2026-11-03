@@ -18,11 +18,11 @@ final class SkydayUITests: XCTestCase {
     func testFirstLaunchShowsEmptyStateAndThreeTabs() {
         let app = launch(reset: true)
         XCTAssertTrue(app.buttons["emptyStateAddButton"].waitForExistence(timeout: 5))
-        let tabs = app.tabBars.buttons
-        XCTAssertEqual(tabs.count, 3)
-        XCTAssertTrue(tabs["Today"].exists)
-        XCTAssertTrue(tabs["Lists"].exists)
-        XCTAssertTrue(tabs["Progress"].exists)
+        // Custom floating tab bar: exactly three tab buttons.
+        for id in ["tabToday", "tabLists", "tabProgress"] {
+            XCTAssertTrue(app.buttons[id].exists, "missing \(id)")
+        }
+        XCTAssertEqual(app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'tab'")).count, 3)
     }
 
     func testQuickAddCompleteUndoAndPersistAcrossRelaunch() {
@@ -31,22 +31,24 @@ final class SkydayUITests: XCTestCase {
 
         let title = app.textFields["taskTitleField"]
         XCTAssertTrue(title.waitForExistence(timeout: 3))
+        title.tap()
         title.typeText("Finish lab report")
         app.buttons["saveTaskButton"].tap()
 
-        let row = app.staticTexts["Finish lab report"]
-        XCTAssertTrue(row.waitForExistence(timeout: 3))
+        // Task cards are buttons whose label starts with the title.
+        let card = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Finish lab report")).firstMatch
+        XCTAssertTrue(card.waitForExistence(timeout: 3))
 
-        // Complete via the checkbox next to the row, then undo.
-        app.buttons.matching(NSPredicate(format: "label == %@", "Not completed")).firstMatch.tap()
+        // Complete via the card's check button, then undo.
+        app.buttons["Complete Finish lab report"].tap()
         XCTAssertTrue(app.buttons["undoButton"].waitForExistence(timeout: 3))
         app.buttons["undoButton"].tap()
-        XCTAssertTrue(row.waitForExistence(timeout: 3))
+        XCTAssertTrue(app.buttons["Complete Finish lab report"].waitForExistence(timeout: 3))
 
         // Relaunch without reset: the task must still be there.
         app.terminate()
         app = launch(reset: false)
-        XCTAssertTrue(app.staticTexts["Finish lab report"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Complete Finish lab report"].waitForExistence(timeout: 5))
     }
 
     func testEmptyTitleCannotBeSaved() {
@@ -54,24 +56,28 @@ final class SkydayUITests: XCTestCase {
         app.buttons["addTaskButton"].tap()
         let title = app.textFields["taskTitleField"]
         XCTAssertTrue(title.waitForExistence(timeout: 3))
+        title.tap()
         title.typeText("   ")
         XCTAssertFalse(app.buttons["saveTaskButton"].isEnabled)
     }
 
     func testCreateListFromListsTab() {
         let app = launch(reset: true)
-        app.tabBars.buttons["Lists"].tap()
+        app.buttons["tabLists"].tap()
         app.buttons["createListButton"].tap()
         let name = app.textFields["listNameField"]
         XCTAssertTrue(name.waitForExistence(timeout: 3))
+        name.tap()
         name.typeText("Thesis")
         app.buttons["saveListButton"].tap()
-        XCTAssertTrue(app.staticTexts["Thesis"].waitForExistence(timeout: 3))
+        // List cards combine their text into one element whose label contains the name.
+        let card = app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", "Thesis")).firstMatch
+        XCTAssertTrue(card.waitForExistence(timeout: 3))
     }
 
     func testSettingsOpensFromProgress() {
         let app = launch(reset: true)
-        app.tabBars.buttons["Progress"].tap()
+        app.buttons["tabProgress"].tap()
         app.buttons["settingsButton"].tap()
         XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 3))
     }

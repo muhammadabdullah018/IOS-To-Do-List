@@ -121,8 +121,10 @@ public struct TaskDraft: Hashable, Sendable {
         public var message: String { "Give the task a name." }
     }
 
+    /// Single-line title: inner line breaks become spaces, ends trimmed, length capped.
     public var trimmedTitle: String {
-        String(title.trimmingCharacters(in: .whitespacesAndNewlines).prefix(TaskDraft.maxTitleLength))
+        let oneLine = title.components(separatedBy: .newlines).joined(separator: " ")
+        return String(oneLine.trimmingCharacters(in: .whitespacesAndNewlines).prefix(TaskDraft.maxTitleLength))
     }
 
     public var validationError: ValidationError? { trimmedTitle.isEmpty ? .emptyTitle : nil }

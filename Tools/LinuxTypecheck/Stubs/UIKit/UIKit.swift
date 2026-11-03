@@ -52,3 +52,9 @@ public protocol UIApplicationDelegate: AnyObject {
 extension UIApplicationDelegate {
     public func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool { true }
 }
+
+public struct UITextContentType: Hashable {
+    public let rawValue: String
+    public init(rawValue: String) { self.rawValue = rawValue }
+    public static let givenName = UITextContentType(rawValue: "givenName")
+}

@@ -23,6 +23,9 @@ struct TaskEditorSheet: View {
     @State private var newSubtask = ""
     @State private var showDiscard = false
     @State private var confirmDelete = false
+    /// Becomes true one run-loop after loading, so the onChange callbacks triggered by
+    /// load() itself don't rewrite the draft (which would mark an untouched task as edited).
+    @State private var settled = false
     @FocusState private var titleFocused: Bool
     @FocusState private var subtaskFocused: Bool
 
@@ -81,10 +84,10 @@ struct TaskEditorSheet: View {
     private var form: some View {
         Form {
             Section {
-                TextField("What do you need to do?", text: $draft.title, axis: .vertical)
+                // Single-line on purpose: Return submits ("Add") instead of inserting a newline.
+                TextField("What do you need to do?", text: $draft.title)
                     .font(.system(.title3, design: .rounded, weight: .semibold))
                     .foregroundStyle(SkyColor.ink)
-                    .lineLimit(1...4)
                     .focused($titleFocused)
                     .submitLabel(.done)
                     .onSubmit { if isCreate { save() } }
@@ -138,9 +141,18 @@ struct TaskEditorSheet: View {
             }
         }
         .scrollDismissesKeyboard(.interactively)
-        .onChange(of: repeatChoice) { _, choice in applyRepeat(choice) }
+        .onChange(of: repeatChoice) { _, choice in
+            guard settled, RepeatChoice(rule: draft.recurrence) != choice else { return }
+            applyRepeat(choice)
+        }
+        .onChange(of: draft.dueDay) { _, newDay in
+            // "Every week on Tuesday" must follow the date when the date changes.
+            guard settled, let newDay, repeatChoice != .custom, repeatChoice != .never else { return }
+            draft.recurrence = repeatChoice.rule(for: newDay)
+        }
     }
 
+    @ViewBuilder
     private func completionRow(_ task: TaskItem) -> some View {
         Button {
             if hasChanges && draft.isValid { store.updateTask(task.id, with: draft) }
@@ -151,9 +163,21 @@ struct TaskEditorSheet: View {
             Label(task.isCompleted ? "Reopen task" : (task.isRecurring ? "Complete this occurrence" : "Mark as complete"),
                   systemImage: task.isCompleted ? "arrow.uturn.backward.circle" : "checkmark.circle.fill")
                 .font(.system(.body, weight: .semibold))
-                .foregroundStyle(task.isCompleted ? SkyColor.deepSky : SkyColor.pinkText)
+                .foregroundStyle(SkyColor.deepSky)
         }
         .accessibilityIdentifier("toggleCompleteButton")
+
+        if task.isRecurring && !task.isCompleted {
+            Button {
+                store.skipOccurrence(task.id)
+                Haptics.tick()
+                dismiss()
+            } label: {
+                Label("Skip this time", systemImage: "forward.end")
+                    .font(.system(.body, weight: .semibold))
+                    .foregroundStyle(SkyColor.deepSky)
+            }
+        }
     }
 
     private var whenSection: some View {
@@ -340,6 +364,7 @@ struct TaskEditorSheet: View {
         original = draft
         repeatChoice = RepeatChoice(rule: draft.recurrence)
         loaded = true
+        DispatchQueue.main.async { settled = true }
     }
 
     private func applyRepeat(_ choice: RepeatChoice) {
@@ -506,10 +531,10 @@ struct CustomRepeatEditor: View {
                     } label: {
                         Text(String(RecurrenceRule.shortWeekdayNames[weekday - 1].prefix(2)))
                             .font(.system(.caption, weight: .bold))
-                            .frame(maxWidth: .infinity, minHeight: 40)
-                            .foregroundStyle(isOn ? Color.white : SkyColor.deepSky)
-                            .background(isOn ? SkyColor.deepSky : SkyColor.surfaceSunken,
-                                        in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                            .foregroundStyle(isOn ? SkyColor.cardInk : SkyColor.deepSky)
+                            .background(isOn ? SkyColor.sky : SkyColor.surfaceSunken,
+                                        in: RoundedRectangle(cornerRadius: Radius.small, style: .continuous))
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(RecurrenceRule.shortWeekdayNames[weekday - 1])

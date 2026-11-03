@@ -12,10 +12,21 @@ struct SettingsView: View {
     @State private var confirmErase = false
     @State private var exportURL: URL?
     @State private var message: String?
+    @State private var name = ""
 
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    TextField("Your first name (optional)", text: $name)
+                        .textContentType(.givenName)
+                        .submitLabel(.done)
+                        .onSubmit(saveName)
+                } header: {
+                    Text("Greeting")
+                } footer: {
+                    Text("Used only for the greeting on Today. Stays on this iPhone.")
+                }
                 goalSection
                 remindersSection
                 digestSection
@@ -28,9 +39,11 @@ struct SettingsView: View {
                 ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
             }
             .task {
+                name = store.settings.displayName
                 await notifications.refreshPermission()
                 exportURL = makeExportFile()
             }
+            .onDisappear(perform: saveName)
             .fileImporter(isPresented: $showImporter, allowedContentTypes: [.json]) { result in
                 switch result {
                 case .success(let url):
@@ -54,6 +67,8 @@ struct SettingsView: View {
                     if let raw = pendingImport {
                         do {
                             try store.importBackup(raw)
+                            exportURL = makeExportFile()
+                            name = store.settings.displayName
                             message = "Backup restored."
                         } catch {
                             message = "The backup couldn't be restored: \(error.localizedDescription)"
@@ -130,7 +145,7 @@ struct SettingsView: View {
         } header: {
             Text("Reminders")
         } footer: {
-            Text("iOS delivers reminders even when Skyday is closed. Skyday can't check in the background, so it re-plans reminders whenever you open the app or change a task. Focus modes and system settings can delay or hide alerts.")
+            Text("Reminders arrive even when Skyday is closed. Focus modes and your iPhone's notification settings can delay or hide them.")
         }
     }
 
@@ -189,6 +204,12 @@ struct SettingsView: View {
     }
 
     // MARK: Helpers
+
+    private func saveName() {
+        let trimmed = String(name.trimmingCharacters(in: .whitespacesAndNewlines).prefix(40))
+        guard trimmed != store.settings.displayName else { return }
+        store.updateSettings { $0.displayName = trimmed }
+    }
 
     private func timeBinding(get: @escaping () -> TimeOfDay, set: @escaping (TimeOfDay) -> Void) -> Binding<Date> {
         let calendar = store.calendar

@@ -13,14 +13,7 @@ struct ProgressScreen: View {
 
         ScrollView {
             VStack(alignment: .leading, spacing: Space.lg) {
-                PageHeader(overline: "Your momentum", title: "Progress", subtitle: "Keep showing up. It adds up.") {
-                    HeaderIconButton(systemImage: "gearshape.fill", label: "Settings") {
-                        router.present(.settings)
-                    }
-                    .accessibilityIdentifier("settingsButton")
-                }
-
-                StreakCard(summary: summary)
+                ProgressHero(summary: summary) { router.present(.settings) }
                 DailyGoalCard(summary: summary) { newGoal in
                     Haptics.selection()
                     store.setDailyGoal(newGoal)
@@ -43,80 +36,72 @@ struct ProgressScreen: View {
                     BadgeGrid(achievements: store.achievements)
                 }
             }
-            .padding(.horizontal, Space.gutter)
-            .padding(.top, Space.sm)
-            .padding(.bottom, Space.xxl)
-            .background(alignment: .top) {
-                VStack(spacing: 0) {
-                    SkyColor.skyBands[0].frame(height: 600)
-                    SkyBackground(variant: .progress)
-                }
-                .offset(y: -600)
-                .padding(.horizontal, -Space.gutter)
-            }
+            .padding(.horizontal, Space.md)
+            .padding(.top, Space.xs)
+            .padding(.bottom, Space.lg)
         }
         .scrollIndicators(.hidden)
-        .background(SkyColor.page.ignoresSafeArea())
+        .background(SkyColor.canvas.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
     }
 }
 
-struct StreakCard: View {
+/// Pink-pastel hero: pink is Skyday's milestone colour, so the streak owns it here.
+struct ProgressHero: View {
     let summary: StreakEngine.Summary
+    let onSettings: () -> Void
 
     var body: some View {
         let next = AchievementEngine.nextMilestone(after: summary.current)
         let previous = AchievementEngine.streakMilestones.last { $0 <= summary.current } ?? 0
         let span = max(1, next - previous)
-        let filled = summary.current - previous
         let segments = min(span, 14)
-        let filledSegments = Int((Double(filled) / Double(span) * Double(segments)).rounded(.down))
+        let filledSegments = Int((Double(summary.current - previous) / Double(span) * Double(segments)).rounded(.down))
 
-        VStack(alignment: .leading, spacing: Space.md) {
-            Text("Current streak").overlineStyle()
+        HeroCard(fill: SkyColor.pinkPastel, clouds: false) {
+            HStack(alignment: .top) {
+                Text("Your momentum")
+                    .font(SkyFont.overline)
+                    .textCase(.uppercase)
+                    .tracking(1.1)
+                    .foregroundStyle(SkyColor.cardInkSecondary)
+                Spacer()
+                InkCircleButton(systemImage: "gearshape.fill", label: "Settings", action: onSettings)
+                    .accessibilityIdentifier("settingsButton")
+            }
             HStack(alignment: .firstTextBaseline, spacing: Space.xs) {
                 Text("\(summary.current)")
                     .font(.system(size: 64, weight: .heavy, design: .rounded))
-                    .foregroundStyle(SkyColor.pink)
+                    .foregroundStyle(SkyColor.pinkOnCard)
                     .contentTransition(.numericText())
                     .minimumScaleFactor(0.6)
-                Text(summary.current == 1 ? "day" : "days")
+                Text("day streak")
                     .font(.system(.title2, design: .rounded, weight: .bold))
-                    .foregroundStyle(SkyColor.ink)
-                Spacer()
+                    .foregroundStyle(SkyColor.cardInk)
+                Spacer(minLength: 0)
                 PixelSprite(sprite: Sprite.streakStar, pixel: 5)
-                    .opacity(summary.current > 0 ? 1 : 0.3)
+                    .opacity(summary.current > 0 ? 1 : 0.35)
+                    .accessibilityHidden(true)
             }
-
-            // Stepped milestone track: one pixel block per day toward the next milestone.
             HStack(spacing: 4) {
                 ForEach(0..<segments, id: \.self) { i in
-                    RoundedRectangle(cornerRadius: 3, style: .continuous)
-                        .fill(i < filledSegments ? SkyColor.pink : SkyColor.pinkSoft)
-                        .frame(height: 14)
+                    Rectangle()
+                        .fill(i < filledSegments ? SkyColor.pink : SkyColor.cardInk.opacity(0.14))
+                        .frame(height: 12)
                 }
             }
             .accessibilityHidden(true)
-
-            Text(milestoneText(next: next))
-                .font(SkyFont.meta)
-                .foregroundStyle(SkyColor.inkSecondary)
+            Text("Next milestone: \(next) days (\(next - summary.current) to go) · Best: \(summary.longest)")
+                .font(.system(.subheadline, weight: .semibold))
+                .foregroundStyle(SkyColor.cardInk)
             if summary.restDayInUse {
                 Label("Rest day used this week. Your streak is safe.", systemImage: "moon.zzz.fill")
                     .font(SkyFont.meta)
-                    .foregroundStyle(SkyColor.deepSky)
+                    .foregroundStyle(SkyColor.cardInkSecondary)
             }
         }
-        .padding(Space.xl)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .card()
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Current streak \(summary.current) \(summary.current == 1 ? "day" : "days"). \(milestoneText(next: next))")
-    }
-
-    private func milestoneText(next: Int) -> String {
-        let away = next - summary.current
-        return "Next milestone: \(next) days (\(away) to go). Best: \(summary.longest)."
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Current streak \(summary.current) days. Next milestone \(next) days. Best \(summary.longest) days.")
     }
 }
 
@@ -181,8 +166,12 @@ struct WeekChart: View {
                 HStack(alignment: .bottom, spacing: Space.sm) {
                     ForEach(days) { status in
                         let h = max(6, chartHeight * CGFloat(status.completions) / CGFloat(maxValue))
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                             .fill(fill(for: status))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
+                                    .strokeBorder(SkyColor.onCanvas, lineWidth: status.day == today ? 2 : 0)
+                            )
                             .frame(maxWidth: .infinity)
                             .frame(height: status.day > today ? 6 : h)
                             .accessibilityElement()
@@ -205,8 +194,8 @@ struct WeekChart: View {
             .accessibilityHidden(true)
 
             HStack(spacing: Space.md) {
-                LegendDot(color: SkyColor.deepSky, label: "Today")
-                LegendDot(color: SkyColor.sky, label: "Goal met")
+                LegendDot(color: SkyColor.pink, label: "Goal met")
+                LegendDot(color: SkyColor.sky, label: "Some done")
                 LegendDot(color: SkyColor.pink.opacity(0.5), label: "Goal", isLine: true)
                 Spacer()
             }
@@ -216,9 +205,8 @@ struct WeekChart: View {
     }
 
     private func fill(for status: StreakEngine.DayStatus) -> Color {
-        if status.day == today { return SkyColor.deepSky }
         if status.day > today { return SkyColor.track }
-        return status.kind == .qualified ? SkyColor.sky : SkyColor.skySoft
+        return status.kind == .qualified ? SkyColor.pink : SkyColor.sky
     }
 }
 
@@ -267,7 +255,7 @@ struct ActivityGrid: View {
             }
             HStack(spacing: Space.md) {
                 LegendDot(color: SkyColor.pink, label: "Goal met")
-                LegendDot(color: SkyColor.pinkSoft, label: "Some done")
+                LegendDot(color: SkyColor.sky, label: "Some done")
                 LegendDot(color: SkyColor.skySoft, label: "Rest day")
                 Spacer()
             }
@@ -283,14 +271,15 @@ struct ActivityGrid: View {
         case .qualified:
             shape.fill(SkyColor.pink)
         case .partial:
-            shape.fill(SkyColor.pinkSoft)
+            shape.fill(SkyColor.sky)
         case .rest:
             shape.fill(SkyColor.skySoft).overlay(Image(systemName: "moon.fill").font(.system(size: 9)).foregroundStyle(SkyColor.deepSky))
         case .today:
-            shape.fill(status.completions > 0 ? SkyColor.pinkSoft : SkyColor.surface)
-                .overlay(shape.strokeBorder(SkyColor.deepSky, lineWidth: 2))
+            shape.fill(status.completions > 0 ? SkyColor.sky : SkyColor.surface)
+                .overlay(shape.strokeBorder(SkyColor.onCanvas, lineWidth: 2))
         case .missed:
-            shape.strokeBorder(SkyColor.border, lineWidth: 1.5)
+            // Visible outline (≥ 3:1 against the card) so "missed" reads as a real state.
+            shape.strokeBorder(SkyColor.onCanvasSecondary.opacity(0.7), lineWidth: 1.5)
         case .future, .beforeHistory:
             shape.fill(SkyColor.surfaceSunken.opacity(0.6))
         }

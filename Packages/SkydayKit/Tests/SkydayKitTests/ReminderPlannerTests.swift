@@ -86,6 +86,15 @@ final class ReminderPlannerTests: XCTestCase {
         XCTAssertTrue(again.remove.isEmpty && again.add.isEmpty)
     }
 
+    func testDeliveryOptionChangeReplacesPendingRequests() {
+        let a = PlannedNotification(id: "skyday.task.a", kind: .task, taskID: nil, title: "A", body: "b", fireDate: now)
+        let pendingWithSound = [PendingNotification(id: a.id, fingerprint: a.fingerprint + "|s1")]
+        XCTAssertTrue(ReminderPlanner.diff(pending: pendingWithSound, desired: [a], fingerprintSuffix: "|s1").add.isEmpty)
+        let toggled = ReminderPlanner.diff(pending: pendingWithSound, desired: [a], fingerprintSuffix: "|s0")
+        XCTAssertEqual(toggled.remove, [a.id])
+        XCTAssertEqual(toggled.add.map(\.id), [a.id])
+    }
+
     func testDigestsSkipEmptyDaysAndCountCarryOvers() {
         let s = AppSettings(morningDigest: DigestSetting(enabled: true, time: TimeOfDay(hour: 8, minute: 0)),
                             eveningDigest: DigestSetting(enabled: true, time: TimeOfDay(hour: 20, minute: 0)))

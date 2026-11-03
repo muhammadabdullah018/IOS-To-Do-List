@@ -1,5 +1,7 @@
 # Skyday QA report
 
+> Update 2026-11-03: the "Not run" Xcode items below have since run on a GitHub Actions macOS runner (Xcode 16.4): simulator build and UI tests pass. Current status: [`DELIVERY_STATUS.md`](DELIVERY_STATUS.md), [`docs/TEST_RESULTS.md`](docs/TEST_RESULTS.md).
+
 Environment: Linux (Ubuntu 24.04) cloud container, Swift 6.0.3 (swift-corelibs-foundation, XCTest). **No macOS, no Xcode, no iOS Simulator.** Nothing below was run on iOS. Date: 2026-11-03.
 
 ## Passed (actually run)
